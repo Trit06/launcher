@@ -482,7 +482,7 @@ try {
   <div class="top-bar">
     <div class="brand">Launcher</div>
     <div class="brand-sub">
-      <span class="version-tag">v5.2</span>
+      <span class="version-tag">v5.3</span>
       <span class="app-count" id="app-count">--</span>
     </div>
   </div>
@@ -674,38 +674,64 @@ function openViewer(i) {
   if ((app.type || 'html') === 'jsx') {
     codeToRender = buildJsxHtml(app.code);
   } else {
-    codeToRender = app.code;
+    codeToRender = injectSafeArea(app.code);
   }
   document.getElementById('viewer-frame').srcdoc = codeToRender;
   document.getElementById('viewer').classList.add('open');
 }
 
+// Mesure les safe-area du launcher et les injecte dans le HTML de l'app embarquée
+function injectSafeArea(htmlCode) {
+  // Mesure les insets actuels
+  const probe = document.createElement('div');
+  probe.style.cssText = 'position:fixed;top:env(safe-area-inset-top,0);left:0;visibility:hidden;';
+  document.body.appendChild(probe);
+  const topInset = parseInt(getComputedStyle(probe).top) || 0;
+  probe.style.top = 'env(safe-area-inset-bottom, 0)';
+  const bottomInset = parseInt(getComputedStyle(probe).top) || 0;
+  probe.remove();
+
+  // Injecte un style en fin de head qui ajoute le padding nécessaire
+  const styleTag = '<style id="__launcher_safe_area__">html,body{padding-top:' + topInset + 'px !important;padding-bottom:' + bottomInset + 'px !important;box-sizing:border-box;}body{min-height:100vh;}</style>';
+
+// Trouve où injecter
+if (/</head>/i.test(htmlCode)) {
+return htmlCode.replace(/</head>/i, styleTag + ‘</head>’);
+} else if (/<head[^>]*>/i.test(htmlCode)) {
+return htmlCode.replace(/(<head[^>]*>)/i, ‘$1’ + styleTag);
+} else if (/<body[^>]*>/i.test(htmlCode)) {
+return htmlCode.replace(/(<body[^>]*>)/i, ‘$1’ + styleTag);
+} else {
+return styleTag + htmlCode;
+}
+}
+
 function closeViewer() {
-  document.getElementById('viewer').classList.remove('open');
-  document.getElementById('viewer-frame').srcdoc = '';
+document.getElementById(‘viewer’).classList.remove(‘open’);
+document.getElementById(‘viewer-frame’).srcdoc = ‘’;
 }
 
 function escHtml(s) {
-  return String(s).replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+return String(s).replace(/[&<>"’]/g, c => ({’&’:’&’,’<’:’<’,’>’:’>’,’"’:’"’,"’":’'’}[c]));
 }
 function formatDate(ts) {
-  const d = new Date(ts);
-  return d.toLocaleDateString('fr-FR', { day: 'numeric', month: 'short' });
+const d = new Date(ts);
+return d.toLocaleDateString(‘fr-FR’, { day: ‘numeric’, month: ‘short’ });
 }
 
-document.getElementById('add-modal').addEventListener('click', e => {
-  if (e.target.id === 'add-modal') closeModal();
+document.getElementById(‘add-modal’).addEventListener(‘click’, e => {
+if (e.target.id === ‘add-modal’) closeModal();
 });
-document.getElementById('inp-code').addEventListener('input', updateTypeIndicator);
+document.getElementById(‘inp-code’).addEventListener(‘input’, updateTypeIndicator);
 
 load();
 renderEmojiPicker();
 render();
 
-if ('serviceWorker' in navigator) {
-  window.addEventListener('load', () => {
-    navigator.serviceWorker.register('sw.js').catch(() => {});
-  });
+if (‘serviceWorker’ in navigator) {
+window.addEventListener(‘load’, () => {
+navigator.serviceWorker.register(‘sw.js’).catch(() => {});
+});
 }
 </script>
 
