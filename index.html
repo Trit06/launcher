@@ -79,7 +79,6 @@ min-height: -webkit-fill-available;
 padding: calc(env(safe-area-inset-top, 20px) + 12px) 0 calc(env(safe-area-inset-bottom, 0px) + 90px);
 }
 
-/* HEADER */
 .top-bar {
 padding: 8px 24px 0;
 margin-bottom: 32px;
@@ -126,7 +125,6 @@ font-size: 9px;
 font-weight: bold;
 }
 
-/* GRID */
 .grid {
 flex: 1;
 padding: 0 16px;
@@ -202,6 +200,22 @@ color: #d4cce8;
 text-transform: uppercase;
 margin-top: 6px;
 font-weight: 500;
+display: flex;
+align-items: center;
+gap: 6px;
+}
+.type-badge {
+background: rgba(228, 204, 255, 0.2);
+color: #e4ccff;
+padding: 1px 6px;
+border-radius: 6px;
+font-size: 8px;
+font-weight: bold;
+letter-spacing: 0.15em;
+}
+.type-badge.jsx {
+background: rgba(184, 248, 255, 0.2);
+color: #b8f8ff;
 }
 .app-card .delete-btn {
 position: absolute;
@@ -238,7 +252,6 @@ justify-content: center;
 gap: 10px;
 min-height: 130px;
 transition: all 0.2s;
-position: relative;
 }
 .add-card:active {
 background: rgba(183, 148, 255, 0.15);
@@ -260,7 +273,6 @@ text-transform: uppercase;
 font-weight: bold;
 }
 
-/* BOTTOM BAR */
 .bottom-bar {
 position: fixed;
 bottom: 0;
@@ -294,7 +306,6 @@ border-color: var(–neon-pink);
 box-shadow: 0 0 20px rgba(255, 170, 232, 0.4);
 }
 
-/* EMPTY */
 .empty {
 grid-column: 1 / -1;
 text-align: center;
@@ -313,7 +324,6 @@ letter-spacing: 0.15em;
 color: #ffffff;
 }
 
-/* MODAL */
 #add-modal {
 display: none;
 position: fixed;
@@ -368,6 +378,23 @@ color: #c8c0e8;
 letter-spacing: 0.3em;
 text-transform: uppercase;
 margin-bottom: 22px;
+}
+.detected-type {
+display: inline-block;
+margin-left: 8px;
+padding: 2px 8px;
+border-radius: 6px;
+font-size: 9px;
+font-weight: bold;
+letter-spacing: 0.15em;
+}
+.detected-type.html {
+background: rgba(228, 204, 255, 0.2);
+color: #e4ccff;
+}
+.detected-type.jsx {
+background: rgba(184, 248, 255, 0.2);
+color: #b8f8ff;
 }
 
 .field { margin-bottom: 16px; }
@@ -465,7 +492,6 @@ transition: opacity 0.2s, transform 0.1s;
 }
 .btn-save:active { opacity: 0.9; transform: scale(0.98); }
 
-/* VIEWER */
 #viewer {
 display: none;
 position: fixed;
@@ -509,7 +535,6 @@ color: white;
 transform: scale(0.88);
 }
 
-/* ANIMATIONS */
 @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
 @keyframes slideUp { from { transform: translateY(100%); } to { transform: translateY(0); } }
 @keyframes cardIn {
@@ -529,7 +554,7 @@ to { transform: rotate(1deg); }
   <div class="top-bar">
     <div class="brand">Launcher</div>
     <div class="brand-sub">
-      <span class="version-tag">v2.3</span>
+      <span class="version-tag">v5.0</span>
       <span class="app-count" id="app-count">--</span>
     </div>
   </div>
@@ -543,12 +568,12 @@ to { transform: rotate(1deg); }
   <div class="modal-sheet">
     <div class="sheet-handle"></div>
     <div class="sheet-title">Nouvelle app</div>
-    <div class="sheet-sub">Colle ton code HTML</div>
+    <div class="sheet-sub">Colle ton code <span class="detected-type" id="type-indicator" style="display:none"></span></div>
 
 ```
 <div class="field">
   <label>Nom</label>
-  <input type="text" id="inp-name" placeholder="Compteur Rami" maxlength="30" autocomplete="off" autocorrect="off">
+  <input type="text" id="inp-name" placeholder="Mon app" maxlength="30" autocomplete="off" autocorrect="off">
 </div>
 
 <div class="field">
@@ -557,8 +582,8 @@ to { transform: rotate(1deg); }
 </div>
 
 <div class="field">
-  <label>Code HTML</label>
-  <textarea id="inp-code" placeholder="<!DOCTYPE html>..."></textarea>
+  <label>Code (HTML ou JSX/React)</label>
+  <textarea id="inp-code" placeholder="<!DOCTYPE html>... ou import React..."></textarea>
 </div>
 
 <div class="sheet-actions">
@@ -590,6 +615,15 @@ function save() {
   try { localStorage.setItem(STORAGE_KEY, JSON.stringify(apps)); } catch(e) { alert('Stockage plein.'); }
 }
 
+// Auto-détection HTML vs JSX
+function detectType(code) {
+  const lower = code.toLowerCase().trim();
+  if (lower.startsWith('<!doctype') || /<html[\s>]/i.test(lower) || /<body[\s>]/i.test(lower)) {
+    return 'html';
+  }
+  return 'jsx';
+}
+
 function render() {
   const grid = document.getElementById('grid');
   grid.innerHTML = '';
@@ -603,12 +637,14 @@ function render() {
       const card = document.createElement('div');
       card.className = 'app-card';
       card.style.animationDelay = (i * 0.05) + 's';
+      const type = app.type || 'html';
+      const typeBadge = type === 'jsx' ? '<span class="type-badge jsx">JSX</span>' : '<span class="type-badge">HTML</span>';
       card.innerHTML = `
         <button class="delete-btn" onclick="deleteApp(event, ${i})">×</button>
         <div class="icon">${app.icon}</div>
         <div>
           <div class="name">${escHtml(app.name)}</div>
-          <div class="meta">${formatDate(app.date)}</div>
+          <div class="meta">${typeBadge}${formatDate(app.date)}</div>
         </div>
       `;
       card.addEventListener('click', () => { if (!editMode) openViewer(i); });
@@ -650,10 +686,24 @@ function renderEmojiPicker() {
   });
 }
 
+function updateTypeIndicator() {
+  const code = document.getElementById('inp-code').value.trim();
+  const indicator = document.getElementById('type-indicator');
+  if (!code) {
+    indicator.style.display = 'none';
+    return;
+  }
+  const type = detectType(code);
+  indicator.style.display = 'inline-block';
+  indicator.textContent = type === 'jsx' ? 'JSX détecté' : 'HTML détecté';
+  indicator.className = 'detected-type ' + type;
+}
+
 function openModal() {
   if (editMode) toggleEdit();
   document.getElementById('inp-name').value = '';
   document.getElementById('inp-code').value = '';
+  document.getElementById('type-indicator').style.display = 'none';
   selectedEmoji = EMOJIS[0];
   renderEmojiPicker();
   document.getElementById('add-modal').classList.add('open');
@@ -666,44 +716,161 @@ function saveApp() {
   const name = document.getElementById('inp-name').value.trim();
   const code = document.getElementById('inp-code').value.trim();
   if (!name) { alert('Donne un nom à ton app.'); return; }
-  if (!code) { alert('Colle le code HTML.'); return; }
-  apps.push({ name, icon: selectedEmoji, code, date: Date.now() });
+  if (!code) { alert('Colle le code.'); return; }
+  const type = detectType(code);
+  apps.push({ name, icon: selectedEmoji, code, type, date: Date.now() });
   save();
   closeModal();
   render();
 }
 
+// Wrappe le code JSX dans un HTML complet qui le compile à la volée
+function wrapJsxAsHtml(jsxCode) {
+  // Nettoie les imports (on les fournit globalement)
+  let cleanCode = jsxCode
+    .replace(/^\s*import\s+.*?from\s+['"][^'"]+['"];?\s*$/gm, '')
+    .replace(/^\s*import\s+['"][^'"]+['"];?\s*$/gm, '');
+
+  // Détecte le nom du composant exporté par défaut
+  let componentName = 'App';
+  const defaultMatch = cleanCode.match(/export\s+default\s+(?:function\s+)?(\w+)/);
+  if (defaultMatch) {
+    componentName = defaultMatch[1];
+  }
+
+  // Supprime les "export default" et "export"
+  cleanCode = cleanCode
+    .replace(/export\s+default\s+function\s+(\w+)/g, 'function $1')
+    .replace(/export\s+default\s+/g, 'const __DEFAULT__ = ')
+    .replace(/export\s+(const|let|var|function|class)\s+/g, '$1 ');
+
+  // Si on a un __DEFAULT__, on l'utilise comme composant racine
+  const renderTarget = cleanCode.includes('__DEFAULT__') ? '__DEFAULT__' : componentName;
+
+  return `<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+<scr${""}ipt src="https://unpkg.com/react@18/umd/react.production.min.js"><\/script>
+<scr${""}ipt src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js"><\/script>
+<scr${""}ipt src="https://unpkg.com/@babel/standalone/babel.min.js"><\/script>
+<scr${""}ipt src="https://cdn.tailwindcss.com"><\/script>
+<scr${""}ipt src="https://unpkg.com/lucide@latest"><\/script>
+<scr${""}ipt src="https://unpkg.com/recharts/umd/Recharts.js"><\/script>
+<style>
+  html, body {
+    margin: 0;
+    padding: 0;
+    min-height: 100vh;
+    padding-top: env(safe-area-inset-top, 0);
+    padding-bottom: env(safe-area-inset-bottom, 0);
+    box-sizing: border-box;
+  }
+  #root { min-height: 100vh; }
+  #error-box {
+    position: fixed;
+    top: 10px; left: 10px; right: 10px;
+    background: #ff5577;
+    color: white;
+    padding: 12px;
+    border-radius: 8px;
+    font-family: monospace;
+    font-size: 11px;
+    z-index: 9999;
+    word-break: break-word;
+    white-space: pre-wrap;
+    display: none;
+  }
+</style>
+
+</head>
+<body>
+<div id="root"></div>
+<div id="error-box"></div>
+<scr${""}ipt>
+  window.onerror = function(msg, src, line, col, err) {
+    var box = document.getElementById('error-box');
+    box.style.display = 'block';
+    box.textContent = 'Erreur ligne ' + line + ': ' + msg;
+    return false;
+  };
+</scr${""}ipt>
+<scr${""}ipt type="text/babel" data-type="module" data-presets="react">
+  const { useState, useEffect, useRef, useMemo, useCallback, useReducer, useContext, createContext, Fragment } = React;
+
+// Stubs pour les imports lucide-react courants
+const createIcon = (name) => (props) => {
+const ref = React.useRef(null);
+React.useEffect(() => {
+if (window.lucide && ref.current) {
+ref.current.innerHTML = ‘’;
+const icon = window.lucide.createElement(window.lucide[name] || window.lucide.Circle);
+ref.current.appendChild(icon);
+}
+}, []);
+return React.createElement(‘span’, {
+ref,
+style: { display: ‘inline-flex’, width: props.size || 24, height: props.size || 24, color: props.color || ‘currentColor’ }
+});
+};
+
+${cleanCode}
+
+const rootEl = document.getElementById(‘root’);
+const root = ReactDOM.createRoot(rootEl);
+try {
+root.render(React.createElement(${renderTarget}));
+} catch(e) {
+document.getElementById(‘error-box’).style.display = ‘block’;
+document.getElementById(‘error-box’).textContent = ’Erreur de rendu: ’ + e.message;
+}
+</script>
+
+</body>
+</html>`;
+}
+
 function openViewer(i) {
-  const app = apps[i];
-  document.getElementById('viewer-frame').srcdoc = app.code;
-  document.getElementById('viewer').classList.add('open');
+const app = apps[i];
+let codeToRender;
+
+if ((app.type || ‘html’) === ‘jsx’) {
+codeToRender = wrapJsxAsHtml(app.code);
+} else {
+codeToRender = app.code;
+}
+
+document.getElementById(‘viewer-frame’).srcdoc = codeToRender;
+document.getElementById(‘viewer’).classList.add(‘open’);
 }
 
 function closeViewer() {
-  document.getElementById('viewer').classList.remove('open');
-  document.getElementById('viewer-frame').srcdoc = '';
+document.getElementById(‘viewer’).classList.remove(‘open’);
+document.getElementById(‘viewer-frame’).srcdoc = ‘’;
 }
 
 function escHtml(s) {
-  return String(s).replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+return String(s).replace(/[&<>"’]/g, c => ({’&’:’&’,’<’:’<’,’>’:’>’,’"’:’"’,"’":’'’}[c]));
 }
 function formatDate(ts) {
-  const d = new Date(ts);
-  return d.toLocaleDateString('fr-FR', { day: 'numeric', month: 'short' });
+const d = new Date(ts);
+return d.toLocaleDateString(‘fr-FR’, { day: ‘numeric’, month: ‘short’ });
 }
 
-document.getElementById('add-modal').addEventListener('click', e => {
-  if (e.target.id === 'add-modal') closeModal();
+document.getElementById(‘add-modal’).addEventListener(‘click’, e => {
+if (e.target.id === ‘add-modal’) closeModal();
 });
+document.getElementById(‘inp-code’).addEventListener(‘input’, updateTypeIndicator);
 
 load();
 renderEmojiPicker();
 render();
 
-if ('serviceWorker' in navigator) {
-  window.addEventListener('load', () => {
-    navigator.serviceWorker.register('sw.js').catch(() => {});
-  });
+if (‘serviceWorker’ in navigator) {
+window.addEventListener(‘load’, () => {
+navigator.serviceWorker.register(‘sw.js’).catch(() => {});
+});
 }
 </script>
 
