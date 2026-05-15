@@ -19,7 +19,6 @@
     --border: rgba(220, 200, 255, 0.4);
     --border-bright: rgba(220, 200, 255, 0.75);
     --ink: #ffffff;
-    --ink-dim: #ffffff;
     --muted: #e8e0ff;
     --neon-violet: #e4ccff;
     --neon-cyan: #b8f8ff;
@@ -34,527 +33,456 @@
     overscroll-behavior: none;
     background: var(--bg-deep);
   }
-
-body {
-background: var(–bg-deep);
-color: var(–ink);
-font-family: ‘Courier New’, monospace;
-min-height: 100vh;
-min-height: -webkit-fill-available;
-position: relative;
-overflow-x: hidden;
-}
-
-body::before {
-content: ‘’;
-position: fixed;
-inset: 0;
-background-image:
-radial-gradient(ellipse 500px 350px at 10% 0%, rgba(201, 168, 255, 0.08), transparent 60%),
-radial-gradient(ellipse 400px 400px at 90% 20%, rgba(142, 245, 255, 0.05), transparent 60%),
-radial-gradient(ellipse 350px 500px at 50% 100%, rgba(255, 125, 224, 0.04), transparent 60%),
-linear-gradient(rgba(180, 150, 255, 0.025) 1px, transparent 1px),
-linear-gradient(90deg, rgba(180, 150, 255, 0.025) 1px, transparent 1px);
-background-size: 100% 100%, 100% 100%, 100% 100%, 50px 50px, 50px 50px;
-pointer-events: none;
-z-index: 0;
-}
-body::after {
-content: ‘’;
-position: fixed;
-inset: 0;
-background: radial-gradient(ellipse at center, transparent 0%, var(–bg-deep) 90%);
-pointer-events: none;
-z-index: 1;
-opacity: 0.5;
-}
-
-#home {
-position: relative;
-z-index: 2;
-display: flex;
-flex-direction: column;
-min-height: 100vh;
-min-height: -webkit-fill-available;
-padding: calc(env(safe-area-inset-top, 20px) + 12px) 0 calc(env(safe-area-inset-bottom, 0px) + 90px);
-}
-
-.top-bar {
-padding: 8px 24px 0;
-margin-bottom: 32px;
-}
-.brand {
-font-family: Georgia, ‘Times New Roman’, serif;
-font-style: italic;
-font-size: 34px;
-font-weight: 500;
-color: #e4ccff;
-text-shadow: 0 0 20px rgba(228, 204, 255, 0.6);
-line-height: 1;
-letter-spacing: 0.01em;
-}
-.brand-sub {
-font-size: 9px;
-letter-spacing: 0.5em;
-text-transform: uppercase;
-color: #d4cce8;
-margin-top: 8px;
-display: flex;
-align-items: center;
-gap: 10px;
-}
-.brand-sub::after {
-content: ‘’;
-flex: 1;
-height: 1px;
-background: linear-gradient(90deg, var(–border-bright), transparent);
-}
-.app-count {
-color: #b8f8ff;
-text-shadow: 0 0 10px rgba(184, 248, 255, 0.8);
-font-weight: bold;
-}
-.version-tag {
-color: #ffaae8;
-text-shadow: 0 0 10px rgba(255, 170, 232, 0.8);
-padding: 3px 10px;
-border: 1px solid rgba(255, 170, 232, 0.7);
-background: rgba(255, 170, 232, 0.1);
-border-radius: 10px;
-font-size: 9px;
-font-weight: bold;
-}
-
-.grid {
-flex: 1;
-padding: 0 16px;
-display: grid;
-grid-template-columns: 1fr 1fr;
-gap: 14px;
-align-content: start;
-}
-
-.app-card {
-background: var(–card);
-backdrop-filter: blur(10px);
--webkit-backdrop-filter: blur(10px);
-border: 1px solid var(–border);
-border-radius: 18px;
-padding: 18px 16px 14px;
-cursor: pointer;
-position: relative;
-overflow: hidden;
-transition: transform 0.15s, border-color 0.3s, box-shadow 0.3s;
-animation: cardIn 0.5s ease backwards;
-min-height: 130px;
-display: flex;
-flex-direction: column;
-justify-content: space-between;
-}
-.app-card::before {
-content: ‘’;
-position: absolute;
-inset: 0;
-background: linear-gradient(135deg, var(–glow-violet) 0%, transparent 40%);
-opacity: 0;
-transition: opacity 0.3s;
-pointer-events: none;
-}
-.app-card::after {
-content: ‘’;
-position: absolute;
-top: 0; left: 0;
-width: 100%; height: 1px;
-background: linear-gradient(90deg, transparent, var(–neon-violet), transparent);
-opacity: 0.4;
-}
-.app-card:active {
-transform: scale(0.96);
-border-color: var(–border-bright);
-box-shadow: 0 0 30px var(–glow-violet);
-}
-.app-card:active::before { opacity: 0.3; }
-
-.app-card .icon {
-font-size: 32px;
-line-height: 1;
-margin-bottom: 12px;
-filter: drop-shadow(0 0 12px var(–glow-violet));
-}
-.app-card .name {
-font-size: 14px;
-color: #ffffff;
-line-height: 1.3;
-font-weight: 600;
-overflow: hidden;
-display: -webkit-box;
--webkit-line-clamp: 2;
--webkit-box-orient: vertical;
-letter-spacing: 0.02em;
-text-shadow: 0 0 8px rgba(228, 204, 255, 0.3);
-}
-.app-card .meta {
-font-size: 9px;
-letter-spacing: 0.25em;
-color: #d4cce8;
-text-transform: uppercase;
-margin-top: 6px;
-font-weight: 500;
-display: flex;
-align-items: center;
-gap: 6px;
-}
-.type-badge {
-background: rgba(228, 204, 255, 0.2);
-color: #e4ccff;
-padding: 1px 6px;
-border-radius: 6px;
-font-size: 8px;
-font-weight: bold;
-letter-spacing: 0.15em;
-}
-.type-badge.jsx {
-background: rgba(184, 248, 255, 0.2);
-color: #b8f8ff;
-}
-.app-card .delete-btn {
-position: absolute;
-top: 8px;
-right: 8px;
-width: 26px;
-height: 26px;
-border-radius: 50%;
-background: var(–danger);
-border: 2px solid var(–bg-deep);
-color: white;
-font-size: 14px;
-display: none;
-align-items: center;
-justify-content: center;
-cursor: pointer;
-z-index: 10;
-line-height: 1;
-box-shadow: 0 0 12px rgba(255, 119, 136, 0.6);
-}
-body.edit-mode .delete-btn { display: flex; }
-body.edit-mode .app-card { animation: wiggle 0.4s ease infinite alternate; }
-
-.add-card {
-background: rgba(228, 204, 255, 0.08);
-border: 2px dashed rgba(228, 204, 255, 0.7);
-border-radius: 18px;
-padding: 20px 16px;
-cursor: pointer;
-display: flex;
-flex-direction: column;
-align-items: center;
-justify-content: center;
-gap: 10px;
-min-height: 130px;
-transition: all 0.2s;
-}
-.add-card:active {
-background: rgba(183, 148, 255, 0.15);
-transform: scale(0.96);
-box-shadow: 0 0 30px var(–glow-violet);
-}
-.add-card .plus {
-font-size: 42px;
-color: #ffffff;
-text-shadow: 0 0 20px rgba(228, 204, 255, 1);
-line-height: 1;
-font-weight: 300;
-}
-.add-card .add-label {
-font-size: 11px;
-letter-spacing: 0.35em;
-color: #e4ccff;
-text-transform: uppercase;
-font-weight: bold;
-}
-
-.bottom-bar {
-position: fixed;
-bottom: 0;
-left: 0; right: 0;
-padding: 16px 24px calc(env(safe-area-inset-bottom, 0px) + 16px);
-background: linear-gradient(to top, var(–bg-deep) 50%, transparent);
-display: flex;
-justify-content: center;
-z-index: 10;
-}
-.edit-toggle {
-background: rgba(45, 40, 75, 0.9);
-backdrop-filter: blur(10px);
--webkit-backdrop-filter: blur(10px);
-border: 1px solid rgba(228, 204, 255, 0.6);
-color: #ffffff;
-padding: 12px 28px;
-border-radius: 24px;
-font-family: ‘Courier New’, monospace;
-font-size: 11px;
-letter-spacing: 0.35em;
-text-transform: uppercase;
-cursor: pointer;
-transition: all 0.2s;
-box-shadow: 0 0 12px rgba(228, 204, 255, 0.3);
-font-weight: bold;
-}
-body.edit-mode .edit-toggle {
-color: var(–neon-pink);
-border-color: var(–neon-pink);
-box-shadow: 0 0 20px rgba(255, 170, 232, 0.4);
-}
-
-.empty {
-grid-column: 1 / -1;
-text-align: center;
-padding: 60px 20px;
-}
-.empty-icon {
-font-size: 56px;
-margin-bottom: 20px;
-opacity: 0.5;
-filter: drop-shadow(0 0 20px var(–glow-violet));
-}
-.empty p {
-font-size: 13px;
-line-height: 1.8;
-letter-spacing: 0.15em;
-color: #ffffff;
-}
-
-#add-modal {
-display: none;
-position: fixed;
-inset: 0;
-z-index: 200;
-background: rgba(5, 5, 13, 0.85);
-backdrop-filter: blur(8px);
--webkit-backdrop-filter: blur(8px);
-align-items: flex-end;
-animation: fadeIn 0.2s ease;
-}
-#add-modal.open { display: flex; }
-
-.modal-sheet {
-background: linear-gradient(180deg, rgba(30, 25, 60, 0.95) 0%, rgba(15, 12, 30, 0.98) 100%);
-border: 1px solid var(–border-bright);
-border-bottom: none;
-border-radius: 24px 24px 0 0;
-padding: 18px 22px calc(env(safe-area-inset-bottom, 0px) + 22px);
-width: 100%;
-animation: slideUp 0.35s cubic-bezier(0.16, 1, 0.3, 1);
-box-shadow: 0 -10px 60px var(–glow-violet);
-position: relative;
-max-height: 90vh;
-overflow-y: auto;
-}
-.modal-sheet::before {
-content: ‘’;
-position: absolute;
-top: 0; left: 20%; right: 20%;
-height: 1px;
-background: linear-gradient(90deg, transparent, var(–neon-violet), transparent);
-}
-.sheet-handle {
-width: 40px;
-height: 4px;
-background: var(–border-bright);
-border-radius: 2px;
-margin: 0 auto 20px;
-}
-.sheet-title {
-font-family: Georgia, serif;
-font-style: italic;
-font-size: 24px;
-color: #e4ccff;
-margin-bottom: 4px;
-text-shadow: 0 0 20px rgba(228, 204, 255, 0.8);
-}
-.sheet-sub {
-font-size: 10px;
-color: #c8c0e8;
-letter-spacing: 0.3em;
-text-transform: uppercase;
-margin-bottom: 22px;
-}
-.detected-type {
-display: inline-block;
-margin-left: 8px;
-padding: 2px 8px;
-border-radius: 6px;
-font-size: 9px;
-font-weight: bold;
-letter-spacing: 0.15em;
-}
-.detected-type.html {
-background: rgba(228, 204, 255, 0.2);
-color: #e4ccff;
-}
-.detected-type.jsx {
-background: rgba(184, 248, 255, 0.2);
-color: #b8f8ff;
-}
-
-.field { margin-bottom: 16px; }
-.field label {
-display: block;
-font-size: 10px;
-letter-spacing: 0.4em;
-text-transform: uppercase;
-color: #e8e0ff;
-margin-bottom: 8px;
-font-weight: bold;
-}
-.field input, .field textarea {
-width: 100%;
-background: rgba(10, 10, 24, 0.6);
-border: 1px solid var(–border);
-color: #ffffff;
-padding: 13px 15px;
-border-radius: 12px;
-font-family: ‘Courier New’, monospace;
-font-size: 14px;
-outline: none;
-transition: border-color 0.2s, box-shadow 0.2s;
--webkit-appearance: none;
-}
-.field input:focus, .field textarea:focus {
-border-color: var(–neon-violet);
-box-shadow: 0 0 0 3px var(–glow-violet);
-}
-.field textarea {
-height: 130px;
-resize: none;
-font-size: 11px;
-line-height: 1.5;
-}
-
-.emoji-picker {
-display: grid;
-grid-template-columns: repeat(8, 1fr);
-gap: 6px;
-}
-.emoji-opt {
-aspect-ratio: 1;
-border-radius: 10px;
-border: 1px solid var(–border);
-background: rgba(10, 10, 24, 0.4);
-font-size: 20px;
-cursor: pointer;
-display: flex;
-align-items: center;
-justify-content: center;
-transition: all 0.15s;
-}
-.emoji-opt.selected {
-border-color: var(–neon-violet);
-background: var(–glow-violet);
-box-shadow: 0 0 16px var(–glow-violet);
-transform: scale(1.08);
-}
-
-.sheet-actions {
-display: flex;
-gap: 10px;
-margin-top: 20px;
-}
-.btn-cancel {
-flex: 1;
-background: transparent;
-border: 1px solid rgba(228, 204, 255, 0.5);
-color: #e4ccff;
-padding: 15px;
-border-radius: 14px;
-font-family: ‘Courier New’, monospace;
-font-size: 11px;
-letter-spacing: 0.3em;
-text-transform: uppercase;
-cursor: pointer;
-font-weight: bold;
-}
-.btn-save {
-flex: 2;
-background: linear-gradient(135deg, var(–neon-violet), var(–neon-pink));
-border: none;
-color: white;
-padding: 15px;
-border-radius: 14px;
-font-family: ‘Courier New’, monospace;
-font-size: 11px;
-letter-spacing: 0.35em;
-text-transform: uppercase;
-cursor: pointer;
-font-weight: bold;
-box-shadow: 0 0 24px var(–glow-violet);
-transition: opacity 0.2s, transform 0.1s;
-}
-.btn-save:active { opacity: 0.9; transform: scale(0.98); }
-
-#viewer {
-display: none;
-position: fixed;
-inset: 0;
-z-index: 500;
-background: #000;
-}
-#viewer.open { display: block; }
-#viewer iframe {
-position: absolute;
-inset: 0;
-width: 100%;
-height: 100%;
-border: none;
-}
-
-.viewer-close-fab {
-position: fixed;
-bottom: calc(env(safe-area-inset-bottom, 0px) + 16px);
-right: 16px;
-z-index: 600;
-width: 50px;
-height: 50px;
-border-radius: 50%;
-background: rgba(20, 20, 40, 0.9);
-backdrop-filter: blur(12px);
--webkit-backdrop-filter: blur(12px);
-border: 1px solid var(–neon-violet);
-color: var(–neon-violet);
-font-size: 20px;
-display: flex;
-align-items: center;
-justify-content: center;
-cursor: pointer;
-transition: all 0.2s;
-box-shadow: 0 0 20px var(–glow-violet);
-}
-.viewer-close-fab:active {
-background: var(–neon-violet);
-color: white;
-transform: scale(0.88);
-}
-
-@keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
-@keyframes slideUp { from { transform: translateY(100%); } to { transform: translateY(0); } }
-@keyframes cardIn {
-from { opacity: 0; transform: translateY(15px) scale(0.95); }
-to { opacity: 1; transform: translateY(0) scale(1); }
-}
-@keyframes wiggle {
-from { transform: rotate(-1deg); }
-to { transform: rotate(1deg); }
-}
+  body {
+    background: var(--bg-deep);
+    color: var(--ink);
+    font-family: 'Courier New', monospace;
+    min-height: 100vh;
+    min-height: -webkit-fill-available;
+    position: relative;
+    overflow-x: hidden;
+  }
+  body::before {
+    content: '';
+    position: fixed;
+    inset: 0;
+    background-image:
+      radial-gradient(ellipse 500px 350px at 10% 0%, rgba(201, 168, 255, 0.08), transparent 60%),
+      radial-gradient(ellipse 400px 400px at 90% 20%, rgba(142, 245, 255, 0.05), transparent 60%),
+      radial-gradient(ellipse 350px 500px at 50% 100%, rgba(255, 125, 224, 0.04), transparent 60%),
+      linear-gradient(rgba(180, 150, 255, 0.025) 1px, transparent 1px),
+      linear-gradient(90deg, rgba(180, 150, 255, 0.025) 1px, transparent 1px);
+    background-size: 100% 100%, 100% 100%, 100% 100%, 50px 50px, 50px 50px;
+    pointer-events: none;
+    z-index: 0;
+  }
+  body::after {
+    content: '';
+    position: fixed;
+    inset: 0;
+    background: radial-gradient(ellipse at center, transparent 0%, var(--bg-deep) 90%);
+    pointer-events: none;
+    z-index: 1;
+    opacity: 0.5;
+  }
+  #home {
+    position: relative;
+    z-index: 2;
+    display: flex;
+    flex-direction: column;
+    min-height: 100vh;
+    min-height: -webkit-fill-available;
+    padding: calc(env(safe-area-inset-top, 20px) + 12px) 0 calc(env(safe-area-inset-bottom, 0px) + 90px);
+  }
+  .top-bar { padding: 8px 24px 0; margin-bottom: 32px; }
+  .brand {
+    font-family: Georgia, serif;
+    font-style: italic;
+    font-size: 34px;
+    color: #e4ccff;
+    text-shadow: 0 0 20px rgba(228, 204, 255, 0.6);
+    line-height: 1;
+  }
+  .brand-sub {
+    font-size: 9px;
+    letter-spacing: 0.5em;
+    text-transform: uppercase;
+    color: #d4cce8;
+    margin-top: 8px;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+  }
+  .brand-sub::after {
+    content: '';
+    flex: 1;
+    height: 1px;
+    background: linear-gradient(90deg, var(--border-bright), transparent);
+  }
+  .app-count {
+    color: #b8f8ff;
+    text-shadow: 0 0 10px rgba(184, 248, 255, 0.8);
+    font-weight: bold;
+  }
+  .version-tag {
+    color: #ffaae8;
+    text-shadow: 0 0 10px rgba(255, 170, 232, 0.8);
+    padding: 3px 10px;
+    border: 1px solid rgba(255, 170, 232, 0.7);
+    background: rgba(255, 170, 232, 0.1);
+    border-radius: 10px;
+    font-size: 9px;
+    font-weight: bold;
+  }
+  .grid {
+    flex: 1;
+    padding: 0 16px;
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 14px;
+    align-content: start;
+  }
+  .app-card {
+    background: var(--card);
+    border: 1px solid var(--border);
+    border-radius: 18px;
+    padding: 18px 16px 14px;
+    cursor: pointer;
+    position: relative;
+    overflow: hidden;
+    transition: transform 0.15s;
+    min-height: 130px;
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+  }
+  .app-card::after {
+    content: '';
+    position: absolute;
+    top: 0; left: 0;
+    width: 100%; height: 1px;
+    background: linear-gradient(90deg, transparent, var(--neon-violet), transparent);
+    opacity: 0.4;
+  }
+  .app-card:active { transform: scale(0.96); }
+  .app-card .icon {
+    font-size: 32px;
+    line-height: 1;
+    margin-bottom: 12px;
+    filter: drop-shadow(0 0 12px var(--glow-violet));
+  }
+  .app-card .name {
+    font-size: 14px;
+    color: #ffffff;
+    line-height: 1.3;
+    font-weight: 600;
+    overflow: hidden;
+    display: -webkit-box;
+    -webkit-line-clamp: 2;
+    -webkit-box-orient: vertical;
+  }
+  .app-card .meta {
+    font-size: 9px;
+    letter-spacing: 0.2em;
+    color: #d4cce8;
+    text-transform: uppercase;
+    margin-top: 6px;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+  }
+  .type-badge {
+    background: rgba(228, 204, 255, 0.2);
+    color: #e4ccff;
+    padding: 1px 6px;
+    border-radius: 6px;
+    font-size: 8px;
+    font-weight: bold;
+    letter-spacing: 0.15em;
+  }
+  .type-badge.jsx {
+    background: rgba(184, 248, 255, 0.2);
+    color: #b8f8ff;
+  }
+  .app-card .delete-btn {
+    position: absolute;
+    top: 8px;
+    right: 8px;
+    width: 26px;
+    height: 26px;
+    border-radius: 50%;
+    background: var(--danger);
+    border: 2px solid var(--bg-deep);
+    color: white;
+    font-size: 14px;
+    display: none;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    z-index: 10;
+    line-height: 1;
+  }
+  body.edit-mode .delete-btn { display: flex; }
+  body.edit-mode .app-card { animation: wiggle 0.4s ease infinite alternate; }
+  .add-card {
+    background: rgba(228, 204, 255, 0.08);
+    border: 2px dashed rgba(228, 204, 255, 0.7);
+    border-radius: 18px;
+    padding: 20px 16px;
+    cursor: pointer;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 10px;
+    min-height: 130px;
+  }
+  .add-card:active { transform: scale(0.96); }
+  .add-card .plus {
+    font-size: 42px;
+    color: #ffffff;
+    text-shadow: 0 0 20px rgba(228, 204, 255, 1);
+    line-height: 1;
+    font-weight: 300;
+  }
+  .add-card .add-label {
+    font-size: 11px;
+    letter-spacing: 0.35em;
+    color: #e4ccff;
+    text-transform: uppercase;
+    font-weight: bold;
+  }
+  .bottom-bar {
+    position: fixed;
+    bottom: 0;
+    left: 0; right: 0;
+    padding: 16px 24px calc(env(safe-area-inset-bottom, 0px) + 16px);
+    background: linear-gradient(to top, var(--bg-deep) 50%, transparent);
+    display: flex;
+    justify-content: center;
+    z-index: 10;
+  }
+  .edit-toggle {
+    background: rgba(45, 40, 75, 0.9);
+    border: 1px solid rgba(228, 204, 255, 0.6);
+    color: #ffffff;
+    padding: 12px 28px;
+    border-radius: 24px;
+    font-family: 'Courier New', monospace;
+    font-size: 11px;
+    letter-spacing: 0.35em;
+    text-transform: uppercase;
+    cursor: pointer;
+    font-weight: bold;
+    box-shadow: 0 0 12px rgba(228, 204, 255, 0.3);
+  }
+  .empty {
+    grid-column: 1 / -1;
+    text-align: center;
+    padding: 60px 20px;
+  }
+  .empty-icon { font-size: 56px; margin-bottom: 20px; opacity: 0.5; }
+  .empty p {
+    font-size: 13px;
+    line-height: 1.8;
+    letter-spacing: 0.15em;
+    color: #ffffff;
+  }
+  #add-modal {
+    display: none;
+    position: fixed;
+    inset: 0;
+    z-index: 200;
+    background: rgba(5, 5, 13, 0.85);
+    align-items: flex-end;
+  }
+  #add-modal.open { display: flex; }
+  .modal-sheet {
+    background: linear-gradient(180deg, rgba(30, 25, 60, 0.95) 0%, rgba(15, 12, 30, 0.98) 100%);
+    border: 1px solid var(--border-bright);
+    border-radius: 24px 24px 0 0;
+    padding: 18px 22px calc(env(safe-area-inset-bottom, 0px) + 22px);
+    width: 100%;
+    max-height: 90vh;
+    overflow-y: auto;
+  }
+  .sheet-handle {
+    width: 40px;
+    height: 4px;
+    background: var(--border-bright);
+    border-radius: 2px;
+    margin: 0 auto 20px;
+  }
+  .sheet-title {
+    font-family: Georgia, serif;
+    font-style: italic;
+    font-size: 24px;
+    color: #e4ccff;
+    margin-bottom: 4px;
+  }
+  .sheet-sub {
+    font-size: 10px;
+    color: #c8c0e8;
+    letter-spacing: 0.3em;
+    text-transform: uppercase;
+    margin-bottom: 22px;
+  }
+  .detected-type {
+    display: inline-block;
+    margin-left: 8px;
+    padding: 2px 8px;
+    border-radius: 6px;
+    font-size: 9px;
+    font-weight: bold;
+    letter-spacing: 0.15em;
+  }
+  .detected-type.html { background: rgba(228, 204, 255, 0.2); color: #e4ccff; }
+  .detected-type.jsx { background: rgba(184, 248, 255, 0.2); color: #b8f8ff; }
+  .field { margin-bottom: 16px; }
+  .field label {
+    display: block;
+    font-size: 10px;
+    letter-spacing: 0.4em;
+    text-transform: uppercase;
+    color: #e8e0ff;
+    margin-bottom: 8px;
+    font-weight: bold;
+  }
+  .field input, .field textarea {
+    width: 100%;
+    background: rgba(10, 10, 24, 0.6);
+    border: 1px solid var(--border);
+    color: #ffffff;
+    padding: 13px 15px;
+    border-radius: 12px;
+    font-family: 'Courier New', monospace;
+    font-size: 14px;
+    outline: none;
+    -webkit-appearance: none;
+  }
+  .field input:focus, .field textarea:focus { border-color: var(--neon-violet); }
+  .field textarea { height: 130px; resize: none; font-size: 11px; line-height: 1.5; }
+  .emoji-picker {
+    display: grid;
+    grid-template-columns: repeat(8, 1fr);
+    gap: 6px;
+  }
+  .emoji-opt {
+    aspect-ratio: 1;
+    border-radius: 10px;
+    border: 1px solid var(--border);
+    background: rgba(10, 10, 24, 0.4);
+    font-size: 20px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+  }
+  .emoji-opt.selected {
+    border-color: var(--neon-violet);
+    background: var(--glow-violet);
+    transform: scale(1.08);
+  }
+  .sheet-actions { display: flex; gap: 10px; margin-top: 20px; }
+  .btn-cancel {
+    flex: 1;
+    background: transparent;
+    border: 1px solid rgba(228, 204, 255, 0.5);
+    color: #e4ccff;
+    padding: 15px;
+    border-radius: 14px;
+    font-family: 'Courier New', monospace;
+    font-size: 11px;
+    letter-spacing: 0.3em;
+    text-transform: uppercase;
+    font-weight: bold;
+    cursor: pointer;
+  }
+  .btn-save {
+    flex: 2;
+    background: linear-gradient(135deg, var(--neon-violet), var(--neon-pink));
+    border: none;
+    color: white;
+    padding: 15px;
+    border-radius: 14px;
+    font-family: 'Courier New', monospace;
+    font-size: 11px;
+    letter-spacing: 0.35em;
+    text-transform: uppercase;
+    font-weight: bold;
+    cursor: pointer;
+  }
+  #viewer {
+    display: none;
+    position: fixed;
+    inset: 0;
+    z-index: 500;
+    background: #000;
+  }
+  #viewer.open { display: block; }
+  #viewer iframe {
+    position: absolute;
+    inset: 0;
+    width: 100%;
+    height: 100%;
+    border: none;
+  }
+  .viewer-close-fab {
+    position: fixed;
+    bottom: calc(env(safe-area-inset-bottom, 0px) + 16px);
+    right: 16px;
+    z-index: 600;
+    width: 50px;
+    height: 50px;
+    border-radius: 50%;
+    background: rgba(20, 20, 40, 0.9);
+    border: 1px solid var(--neon-violet);
+    color: var(--neon-violet);
+    font-size: 20px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    box-shadow: 0 0 20px var(--glow-violet);
+  }
+  @keyframes wiggle {
+    from { transform: rotate(-1deg); }
+    to { transform: rotate(1deg); }
+  }
 </style>
-
 </head>
 <body>
+
+<!-- TEMPLATE pour le wrapping JSX, stocké dans une balise <template> qui n'est pas exécutée -->
+
+<template id="jsx-wrapper-template"><!DOCTYPE html>
+
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+<script src="https://unpkg.com/react@18/umd/react.production.min.js"></script>
+<script src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js"></script>
+<script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
+<script src="https://cdn.tailwindcss.com"></script>
+<script src="https://unpkg.com/lucide@latest/dist/umd/lucide.min.js"></script>
+<style>
+  html,body{margin:0;padding:0;min-height:100vh;padding-top:env(safe-area-inset-top,0);padding-bottom:env(safe-area-inset-bottom,0);box-sizing:border-box;background:#fff;}
+  #root{min-height:100vh;}
+  #error-box{position:fixed;top:10px;left:10px;right:10px;background:#ff5577;color:white;padding:12px;border-radius:8px;font-family:monospace;font-size:11px;z-index:9999;word-break:break-word;white-space:pre-wrap;display:none;}
+</style>
+</head>
+<body>
+<div id="root"></div>
+<div id="error-box"></div>
+<script>
+window.onerror = function(msg, src, line, col, err) {
+  var b = document.getElementById('error-box');
+  b.style.display = 'block';
+  b.textContent = 'Erreur ligne ' + line + ': ' + msg;
+  return false;
+};
+</script>
+<script type="text/babel" data-presets="react">
+const { useState, useEffect, useRef, useMemo, useCallback, useReducer, useContext, createContext, Fragment } = React;
+/*__USER_CODE__*/
+try {
+  const root = ReactDOM.createRoot(document.getElementById('root'));
+  root.render(React.createElement(/*__RENDER_TARGET__*/));
+} catch(e) {
+  var b = document.getElementById('error-box');
+  b.style.display = 'block';
+  b.textContent = 'Erreur de rendu: ' + e.message;
+}
+</script>
+</body>
+</html></template>
 
 <div id="home">
   <div class="top-bar">
     <div class="brand">Launcher</div>
     <div class="brand-sub">
-      <span class="version-tag">v5.1</span>
+      <span class="version-tag">v5.2</span>
       <span class="app-count" id="app-count">--</span>
     </div>
   </div>
@@ -569,29 +497,22 @@ to { transform: rotate(1deg); }
     <div class="sheet-handle"></div>
     <div class="sheet-title">Nouvelle app</div>
     <div class="sheet-sub">Colle ton code <span class="detected-type" id="type-indicator" style="display:none"></span></div>
-
-```
-<div class="field">
-  <label>Nom</label>
-  <input type="text" id="inp-name" placeholder="Mon app" maxlength="30" autocomplete="off" autocorrect="off">
-</div>
-
-<div class="field">
-  <label>Icône</label>
-  <div class="emoji-picker" id="emoji-picker"></div>
-</div>
-
-<div class="field">
-  <label>Code (HTML ou JSX/React)</label>
-  <textarea id="inp-code" placeholder="<!DOCTYPE html>... ou import React..."></textarea>
-</div>
-
-<div class="sheet-actions">
-  <button class="btn-cancel" onclick="closeModal()">Annuler</button>
-  <button class="btn-save" onclick="saveApp()">Enregistrer</button>
-</div>
-```
-
+    <div class="field">
+      <label>Nom</label>
+      <input type="text" id="inp-name" placeholder="Mon app" maxlength="30" autocomplete="off">
+    </div>
+    <div class="field">
+      <label>Icône</label>
+      <div class="emoji-picker" id="emoji-picker"></div>
+    </div>
+    <div class="field">
+      <label>Code (HTML ou JSX)</label>
+      <textarea id="inp-code" placeholder="<!DOCTYPE html>... ou import React..."></textarea>
+    </div>
+    <div class="sheet-actions">
+      <button class="btn-cancel" onclick="closeModal()">Annuler</button>
+      <button class="btn-save" onclick="saveApp()">Enregistrer</button>
+    </div>
   </div>
 </div>
 
@@ -615,7 +536,6 @@ function save() {
   try { localStorage.setItem(STORAGE_KEY, JSON.stringify(apps)); } catch(e) { alert('Stockage plein.'); }
 }
 
-// Auto-détection HTML vs JSX
 function detectType(code) {
   const lower = code.toLowerCase().trim();
   if (lower.startsWith('<!doctype') || /<html[\s>]/i.test(lower) || /<body[\s>]/i.test(lower)) {
@@ -627,26 +547,23 @@ function detectType(code) {
 function render() {
   const grid = document.getElementById('grid');
   grid.innerHTML = '';
-
-  document.getElementById('app-count').textContent = apps.length ? `${apps.length} app${apps.length > 1 ? 's' : ''}` : '';
+  document.getElementById('app-count').textContent = apps.length ? apps.length + ' app' + (apps.length > 1 ? 's' : '') : '';
 
   if (apps.length === 0) {
-    grid.innerHTML = `<div class="empty"><div class="empty-icon">📱</div><p>Aucune app pour l'instant.<br>Ajoute ta première app<br>avec le bouton +</p></div>`;
+    grid.innerHTML = '<div class="empty"><div class="empty-icon">📱</div><p>Aucune app pour l&apos;instant.<br>Ajoute ta première app<br>avec le bouton +</p></div>';
   } else {
     apps.forEach((app, i) => {
       const card = document.createElement('div');
       card.className = 'app-card';
-      card.style.animationDelay = (i * 0.05) + 's';
       const type = app.type || 'html';
-      const typeBadge = type === 'jsx' ? '<span class="type-badge jsx">JSX</span>' : '<span class="type-badge">HTML</span>';
-      card.innerHTML = `
-        <button class="delete-btn" onclick="deleteApp(event, ${i})">×</button>
-        <div class="icon">${app.icon}</div>
-        <div>
-          <div class="name">${escHtml(app.name)}</div>
-          <div class="meta">${typeBadge}${formatDate(app.date)}</div>
-        </div>
-      `;
+      const badge = type === 'jsx'
+        ? '<span class="type-badge jsx">JSX</span>'
+        : '<span class="type-badge">HTML</span>';
+      card.innerHTML =
+        '<button class="delete-btn" onclick="deleteApp(event,' + i + ')">×</button>' +
+        '<div class="icon">' + app.icon + '</div>' +
+        '<div><div class="name">' + escHtml(app.name) + '</div>' +
+        '<div class="meta">' + badge + formatDate(app.date) + '</div></div>';
       card.addEventListener('click', () => { if (!editMode) openViewer(i); });
       grid.appendChild(card);
     });
@@ -654,7 +571,7 @@ function render() {
 
   const addCard = document.createElement('div');
   addCard.className = 'add-card';
-  addCard.innerHTML = `<div class="plus">＋</div><div class="add-label">Ajouter</div>`;
+  addCard.innerHTML = '<div class="plus">＋</div><div class="add-label">Ajouter</div>';
   addCard.onclick = openModal;
   grid.appendChild(addCard);
 }
@@ -667,7 +584,7 @@ function toggleEdit() {
 
 function deleteApp(e, i) {
   e.stopPropagation();
-  if (confirm(`Supprimer "${apps[i].name}" ?`)) {
+  if (confirm('Supprimer "' + apps[i].name + '" ?')) {
     apps.splice(i, 1);
     save();
     render();
@@ -715,7 +632,7 @@ function closeModal() {
 function saveApp() {
   const name = document.getElementById('inp-name').value.trim();
   const code = document.getElementById('inp-code').value.trim();
-  if (!name) { alert('Donne un nom à ton app.'); return; }
+  if (!name) { alert('Donne un nom.'); return; }
   if (!code) { alert('Colle le code.'); return; }
   const type = detectType(code);
   apps.push({ name, icon: selectedEmoji, code, type, date: Date.now() });
@@ -724,107 +641,71 @@ function saveApp() {
   render();
 }
 
-// Wrappe le code JSX dans un HTML complet qui le compile à la volée
-function wrapJsxAsHtml(jsxCode) {
-  // Nettoie les imports (on les fournit globalement)
-  var cleanCode = jsxCode
+// Compose le HTML JSX en utilisant le template caché dans la page
+function buildJsxHtml(jsxCode) {
+  // Nettoie les imports
+  let cleanCode = jsxCode
     .replace(/^\s*import\s+.*?from\s+['"][^'"]+['"];?\s*$/gm, '')
     .replace(/^\s*import\s+['"][^'"]+['"];?\s*$/gm, '');
 
   // Détecte le nom du composant exporté par défaut
-  var componentName = 'App';
-  var defaultMatch = cleanCode.match(/export\s+default\s+(?:function\s+)?(\w+)/);
-  if (defaultMatch) {
-    componentName = defaultMatch[1];
-  }
+  let componentName = 'App';
+  const m = cleanCode.match(/export\s+default\s+(?:function\s+)?(\w+)/);
+  if (m) componentName = m[1];
 
-  // Supprime les "export default" et "export"
   cleanCode = cleanCode
     .replace(/export\s+default\s+function\s+(\w+)/g, 'function $1')
     .replace(/export\s+default\s+/g, 'const __DEFAULT__ = ')
     .replace(/export\s+(const|let|var|function|class)\s+/g, '$1 ');
 
-  var renderTarget = cleanCode.indexOf('__DEFAULT__') >= 0 ? '__DEFAULT__' : componentName;
+  const renderTarget = cleanCode.indexOf('__DEFAULT__') >= 0 ? '__DEFAULT__' : componentName;
 
-  // On construit le HTML avec des concaténations pour éviter le problème de parsing
-  // des balises de fermeture script à l'intérieur d'un template literal.
-  // L'astuce: on construit la balise script via "<" + "script" pour que le parser HTML
-  // ne la voie pas dans le source du launcher.
-  var S = '<' + 'script';
-  var ES = '<' + '/' + 'script' + '>';
-
-  var html = '<!DOCTYPE html>' +
-    '<html lang="fr"><head>' +
-    '<meta charset="UTF-8">' +
-    '<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">' +
-    S + ' src="https://unpkg.com/react@18/umd/react.production.min.js">' + ES +
-    S + ' src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js">' + ES +
-    S + ' src="https://unpkg.com/@babel/standalone/babel.min.js">' + ES +
-    S + ' src="https://cdn.tailwindcss.com">' + ES +
-    S + ' src="https://unpkg.com/lucide@latest">' + ES +
-    S + ' src="https://unpkg.com/recharts/umd/Recharts.js">' + ES +
-    '<style>' +
-    'html,body{margin:0;padding:0;min-height:100vh;padding-top:env(safe-area-inset-top,0);padding-bottom:env(safe-area-inset-bottom,0);box-sizing:border-box;}' +
-    '#root{min-height:100vh;}' +
-    '#error-box{position:fixed;top:10px;left:10px;right:10px;background:#ff5577;color:white;padding:12px;border-radius:8px;font-family:monospace;font-size:11px;z-index:9999;word-break:break-word;white-space:pre-wrap;display:none;}' +
-    '</style></head><body>' +
-
-```
-'<div id="root"></div><div id="error-box"></div>' +
-S + '>' +
-'window.onerror=function(msg,src,line,col,err){var b=document.getElementById("error-box");b.style.display="block";b.textContent="Erreur ligne "+line+": "+msg;return false;};' +
-ES +
-S + ' type="text/babel" data-presets="react">' +
-'const {useState,useEffect,useRef,useMemo,useCallback,useReducer,useContext,createContext,Fragment}=React;' +
-cleanCode +
-';try{const root=ReactDOM.createRoot(document.getElementById("root"));root.render(React.createElement(' + renderTarget + '));}catch(e){var b=document.getElementById("error-box");b.style.display="block";b.textContent="Erreur de rendu: "+e.message;}' +
-ES +
-'</body></html>';
-```
-
-return html;
+  // Récupère le template HTML qui est dans le DOM (pas dans une chaîne JS)
+  const tpl = document.getElementById('jsx-wrapper-template');
+  let html = tpl.innerHTML;
+  html = html.replace('/*__USER_CODE__*/', cleanCode);
+  html = html.replace('/*__RENDER_TARGET__*/', renderTarget);
+  return html;
 }
 
 function openViewer(i) {
-const app = apps[i];
-let codeToRender;
-
-if ((app.type || ‘html’) === ‘jsx’) {
-codeToRender = wrapJsxAsHtml(app.code);
-} else {
-codeToRender = app.code;
-}
-
-document.getElementById(‘viewer-frame’).srcdoc = codeToRender;
-document.getElementById(‘viewer’).classList.add(‘open’);
+  const app = apps[i];
+  let codeToRender;
+  if ((app.type || 'html') === 'jsx') {
+    codeToRender = buildJsxHtml(app.code);
+  } else {
+    codeToRender = app.code;
+  }
+  document.getElementById('viewer-frame').srcdoc = codeToRender;
+  document.getElementById('viewer').classList.add('open');
 }
 
 function closeViewer() {
-document.getElementById(‘viewer’).classList.remove(‘open’);
-document.getElementById(‘viewer-frame’).srcdoc = ‘’;
+  document.getElementById('viewer').classList.remove('open');
+  document.getElementById('viewer-frame').srcdoc = '';
 }
 
 function escHtml(s) {
-return String(s).replace(/[&<>"’]/g, c => ({’&’:’&’,’<’:’<’,’>’:’>’,’"’:’"’,"’":’'’}[c]));
+  return String(s).replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
 }
 function formatDate(ts) {
-const d = new Date(ts);
-return d.toLocaleDateString(‘fr-FR’, { day: ‘numeric’, month: ‘short’ });
+  const d = new Date(ts);
+  return d.toLocaleDateString('fr-FR', { day: 'numeric', month: 'short' });
 }
 
-document.getElementById(‘add-modal’).addEventListener(‘click’, e => {
-if (e.target.id === ‘add-modal’) closeModal();
+document.getElementById('add-modal').addEventListener('click', e => {
+  if (e.target.id === 'add-modal') closeModal();
 });
-document.getElementById(‘inp-code’).addEventListener(‘input’, updateTypeIndicator);
+document.getElementById('inp-code').addEventListener('input', updateTypeIndicator);
 
 load();
 renderEmojiPicker();
 render();
 
-if (‘serviceWorker’ in navigator) {
-window.addEventListener(‘load’, () => {
-navigator.serviceWorker.register(‘sw.js’).catch(() => {});
-});
+if ('serviceWorker' in navigator) {
+  window.addEventListener('load', () => {
+    navigator.serviceWorker.register('sw.js').catch(() => {});
+  });
 }
 </script>
 
