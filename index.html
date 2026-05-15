@@ -3,969 +3,708 @@
 <html lang="fr">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover, maximum-scale=1.0, user-scalable=no">
-<meta name="theme-color" content="#0a0a14">
-
-<!-- iOS PWA -->
-
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
 <meta name="apple-mobile-web-app-title" content="Launcher">
-<link rel="apple-touch-icon" href="data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 180 180'><defs><linearGradient id='g' x1='0' y1='0' x2='1' y2='1'><stop offset='0' stop-color='%23e4ccff'/><stop offset='1' stop-color='%23b8f8ff'/></linearGradient></defs><rect width='180' height='180' rx='40' fill='%230a0a14'/><text x='90' y='128' font-family='Georgia,serif' font-style='italic' font-size='130' font-weight='bold' text-anchor='middle' fill='url(%23g)'>L</text></svg>">
-
-<!-- Android PWA -->
-
+<meta name="theme-color" content="#0a0a14">
 <link rel="manifest" href="manifest.json">
-
 <title>Launcher</title>
 <style>
-  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
-
-html, body {
-width: 100%;
-min-height: 100vh;
-overflow-x: hidden;
-background: #0a0a14;
-color: #ffffff;
-font-family: ‘Courier New’, Courier, monospace;
--webkit-font-smoothing: antialiased;
--webkit-tap-highlight-color: transparent;
-overscroll-behavior: none;
-}
+  :root {
+    --bg-deep: #0a0a14;
+    --bg: #15121f;
+    --surface: rgba(50, 45, 75, 0.9);
+    --card: rgba(55, 50, 85, 0.9);
+    --border: rgba(220, 200, 255, 0.4);
+    --border-bright: rgba(220, 200, 255, 0.75);
+    --ink: #ffffff;
+    --ink-dim: #ffffff;
+    --muted: #e8e0ff;
+    --neon-violet: #e4ccff;
+    --neon-cyan: #b8f8ff;
+    --neon-pink: #ffaae8;
+    --glow-violet: rgba(228, 204, 255, 0.8);
+    --glow-cyan: rgba(184, 248, 255, 0.7);
+    --danger: #ff7788;
+  }
+  * { box-sizing: border-box; margin: 0; padding: 0; -webkit-tap-highlight-color: transparent; }
+  html, body {
+    height: 100%;
+    overscroll-behavior: none;
+    background: var(--bg-deep);
+  }
 
 body {
-padding:
-calc(env(safe-area-inset-top) + 16px)
-calc(env(safe-area-inset-right) + 16px)
-calc(env(safe-area-inset-bottom) + 96px)
-calc(env(safe-area-inset-left) + 16px);
+background: var(–bg-deep);
+color: var(–ink);
+font-family: ‘Courier New’, monospace;
+min-height: 100vh;
+min-height: -webkit-fill-available;
+position: relative;
+overflow-x: hidden;
+}
+
+body::before {
+content: ‘’;
+position: fixed;
+inset: 0;
 background-image:
-radial-gradient(circle at 15% 10%, rgba(228, 204, 255, 0.18), transparent 45%),
-radial-gradient(circle at 85% 25%, rgba(184, 248, 255, 0.14), transparent 50%),
-radial-gradient(circle at 50% 95%, rgba(255, 170, 232, 0.12), transparent 55%);
-background-attachment: fixed;
+radial-gradient(ellipse 500px 350px at 10% 0%, rgba(201, 168, 255, 0.08), transparent 60%),
+radial-gradient(ellipse 400px 400px at 90% 20%, rgba(142, 245, 255, 0.05), transparent 60%),
+radial-gradient(ellipse 350px 500px at 50% 100%, rgba(255, 125, 224, 0.04), transparent 60%),
+linear-gradient(rgba(180, 150, 255, 0.025) 1px, transparent 1px),
+linear-gradient(90deg, rgba(180, 150, 255, 0.025) 1px, transparent 1px);
+background-size: 100% 100%, 100% 100%, 100% 100%, 50px 50px, 50px 50px;
+pointer-events: none;
+z-index: 0;
+}
+body::after {
+content: ‘’;
+position: fixed;
+inset: 0;
+background: radial-gradient(ellipse at center, transparent 0%, var(–bg-deep) 90%);
+pointer-events: none;
+z-index: 1;
+opacity: 0.5;
+}
+
+#home {
+position: relative;
+z-index: 2;
+display: flex;
+flex-direction: column;
+min-height: 100vh;
+min-height: -webkit-fill-available;
+padding: calc(env(safe-area-inset-top, 20px) + 12px) 0 calc(env(safe-area-inset-bottom, 0px) + 90px);
 }
 
 /* HEADER */
-.header {
-display: flex;
-align-items: baseline;
-justify-content: space-between;
-margin-bottom: 24px;
-padding: 8px 4px 0;
+.top-bar {
+padding: 8px 24px 0;
+margin-bottom: 32px;
 }
-
-.title {
+.brand {
 font-family: Georgia, ‘Times New Roman’, serif;
 font-style: italic;
-font-size: 38px;
-font-weight: 700;
+font-size: 34px;
+font-weight: 500;
 color: #e4ccff;
-letter-spacing: 1px;
-text-shadow:
-0 0 12px rgba(228, 204, 255, 0.55),
-0 0 28px rgba(228, 204, 255, 0.35),
-0 0 48px rgba(184, 248, 255, 0.2);
+text-shadow: 0 0 20px rgba(228, 204, 255, 0.6);
+line-height: 1;
+letter-spacing: 0.01em;
 }
-
-.version {
-font-family: ‘Courier New’, monospace;
-font-size: 11px;
-font-weight: bold;
-color: #ffaae8;
-letter-spacing: 2px;
+.brand-sub {
+font-size: 9px;
+letter-spacing: 0.5em;
 text-transform: uppercase;
-text-shadow: 0 0 8px rgba(255, 170, 232, 0.7);
-padding: 4px 10px;
-border: 1px solid rgba(255, 170, 232, 0.4);
-border-radius: 12px;
-background: rgba(255, 170, 232, 0.06);
+color: #d4cce8;
+margin-top: 8px;
+display: flex;
+align-items: center;
+gap: 10px;
+}
+.brand-sub::after {
+content: ‘’;
+flex: 1;
+height: 1px;
+background: linear-gradient(90deg, var(–border-bright), transparent);
+}
+.app-count {
+color: #b8f8ff;
+text-shadow: 0 0 10px rgba(184, 248, 255, 0.8);
+font-weight: bold;
+}
+.version-tag {
+color: #ffaae8;
+text-shadow: 0 0 10px rgba(255, 170, 232, 0.8);
+padding: 3px 10px;
+border: 1px solid rgba(255, 170, 232, 0.7);
+background: rgba(255, 170, 232, 0.1);
+border-radius: 10px;
+font-size: 9px;
+font-weight: bold;
 }
 
 /* GRID */
 .grid {
+flex: 1;
+padding: 0 16px;
 display: grid;
-grid-template-columns: repeat(2, 1fr);
+grid-template-columns: 1fr 1fr;
 gap: 14px;
+align-content: start;
 }
 
-.card {
-position: relative;
-background: rgba(45, 40, 75, 0.85);
-border: 1px solid rgba(228, 204, 255, 0.45);
+.app-card {
+background: var(–card);
+backdrop-filter: blur(10px);
+-webkit-backdrop-filter: blur(10px);
+border: 1px solid var(–border);
 border-radius: 18px;
-padding: 20px 14px 16px;
-min-height: 140px;
+padding: 18px 16px 14px;
+cursor: pointer;
+position: relative;
+overflow: hidden;
+transition: transform 0.15s, border-color 0.3s, box-shadow 0.3s;
+animation: cardIn 0.5s ease backwards;
+min-height: 130px;
+display: flex;
+flex-direction: column;
+justify-content: space-between;
+}
+.app-card::before {
+content: ‘’;
+position: absolute;
+inset: 0;
+background: linear-gradient(135deg, var(–glow-violet) 0%, transparent 40%);
+opacity: 0;
+transition: opacity 0.3s;
+pointer-events: none;
+}
+.app-card::after {
+content: ‘’;
+position: absolute;
+top: 0; left: 0;
+width: 100%; height: 1px;
+background: linear-gradient(90deg, transparent, var(–neon-violet), transparent);
+opacity: 0.4;
+}
+.app-card:active {
+transform: scale(0.96);
+border-color: var(–border-bright);
+box-shadow: 0 0 30px var(–glow-violet);
+}
+.app-card:active::before { opacity: 0.3; }
+
+.app-card .icon {
+font-size: 32px;
+line-height: 1;
+margin-bottom: 12px;
+filter: drop-shadow(0 0 12px var(–glow-violet));
+}
+.app-card .name {
+font-size: 14px;
+color: #ffffff;
+line-height: 1.3;
+font-weight: 600;
+overflow: hidden;
+display: -webkit-box;
+-webkit-line-clamp: 2;
+-webkit-box-orient: vertical;
+letter-spacing: 0.02em;
+text-shadow: 0 0 8px rgba(228, 204, 255, 0.3);
+}
+.app-card .meta {
+font-size: 9px;
+letter-spacing: 0.25em;
+color: #d4cce8;
+text-transform: uppercase;
+margin-top: 6px;
+font-weight: 500;
+}
+.app-card .delete-btn {
+position: absolute;
+top: 8px;
+right: 8px;
+width: 26px;
+height: 26px;
+border-radius: 50%;
+background: var(–danger);
+border: 2px solid var(–bg-deep);
+color: white;
+font-size: 14px;
+display: none;
+align-items: center;
+justify-content: center;
+cursor: pointer;
+z-index: 10;
+line-height: 1;
+box-shadow: 0 0 12px rgba(255, 119, 136, 0.6);
+}
+body.edit-mode .delete-btn { display: flex; }
+body.edit-mode .app-card { animation: wiggle 0.4s ease infinite alternate; }
+
+.add-card {
+background: rgba(228, 204, 255, 0.08);
+border: 2px dashed rgba(228, 204, 255, 0.7);
+border-radius: 18px;
+padding: 20px 16px;
+cursor: pointer;
 display: flex;
 flex-direction: column;
 align-items: center;
 justify-content: center;
-gap: 8px;
-cursor: pointer;
-transition: transform 0.15s ease, box-shadow 0.2s ease, border-color 0.2s ease;
-box-shadow:
-0 4px 20px rgba(0, 0, 0, 0.5),
-inset 0 1px 0 rgba(255, 255, 255, 0.05);
--webkit-user-select: none;
-user-select: none;
+gap: 10px;
+min-height: 130px;
+transition: all 0.2s;
+position: relative;
 }
-
-.card:active {
-transform: scale(0.97);
-border-color: rgba(228, 204, 255, 0.9);
-box-shadow:
-0 4px 28px rgba(228, 204, 255, 0.35),
-inset 0 1px 0 rgba(255, 255, 255, 0.08);
+.add-card:active {
+background: rgba(183, 148, 255, 0.15);
+transform: scale(0.96);
+box-shadow: 0 0 30px var(–glow-violet);
 }
-
-.card-icon {
-font-size: 44px;
-line-height: 1;
-filter: drop-shadow(0 0 10px rgba(228, 204, 255, 0.55));
-}
-
-.card-name {
-font-size: 14px;
-font-weight: bold;
+.add-card .plus {
+font-size: 42px;
 color: #ffffff;
-text-align: center;
-word-break: break-word;
-letter-spacing: 0.5px;
-}
-
-.card-date {
-font-size: 10px;
-color: #b8f8ff;
-letter-spacing: 1px;
-text-transform: uppercase;
-opacity: 0.85;
-}
-
-/* ADD BUTTON CARD */
-.card-add {
-background: rgba(228, 204, 255, 0.08);
-border: 2px dashed rgba(228, 204, 255, 0.55);
-}
-
-.card-add .plus {
-font-size: 56px;
+text-shadow: 0 0 20px rgba(228, 204, 255, 1);
 line-height: 1;
-color: #ffffff;
-font-weight: 100;
-text-shadow:
-0 0 14px rgba(228, 204, 255, 0.9),
-0 0 30px rgba(228, 204, 255, 0.55),
-0 0 50px rgba(184, 248, 255, 0.35);
+font-weight: 300;
 }
-
-.card-add .add-label {
+.add-card .add-label {
 font-size: 11px;
+letter-spacing: 0.35em;
 color: #e4ccff;
-letter-spacing: 2px;
 text-transform: uppercase;
-margin-top: 4px;
-}
-
-/* EDIT MODE */
-.edit-mode .card:not(.card-add) {
-animation: wiggle 0.4s ease-in-out infinite alternate;
-}
-
-@keyframes wiggle {
-0%   { transform: rotate(-1.2deg); }
-100% { transform: rotate(1.2deg); }
-}
-
-.delete-btn {
-position: absolute;
-top: -8px;
-right: -8px;
-width: 28px;
-height: 28px;
-border-radius: 50%;
-background: #ff3366;
-color: #ffffff;
-border: 2px solid #0a0a14;
-font-size: 18px;
 font-weight: bold;
-line-height: 1;
-display: none;
-align-items: center;
-justify-content: center;
-cursor: pointer;
-box-shadow: 0 0 14px rgba(255, 51, 102, 0.7);
-z-index: 2;
-padding: 0;
 }
 
-.edit-mode .delete-btn {
-display: flex;
-}
-
-/* FOOTER EDIT BUTTON */
-.footer {
+/* BOTTOM BAR */
+.bottom-bar {
 position: fixed;
-left: 0;
-right: 0;
 bottom: 0;
-padding: 12px 16px calc(env(safe-area-inset-bottom) + 12px);
+left: 0; right: 0;
+padding: 16px 24px calc(env(safe-area-inset-bottom, 0px) + 16px);
+background: linear-gradient(to top, var(–bg-deep) 50%, transparent);
 display: flex;
 justify-content: center;
-background: linear-gradient(to top, rgba(10, 10, 20, 0.95) 60%, transparent);
 z-index: 10;
-pointer-events: none;
 }
-
 .edit-toggle {
-pointer-events: auto;
 background: rgba(45, 40, 75, 0.9);
-color: #e4ccff;
-border: 1px solid rgba(228, 204, 255, 0.5);
-border-radius: 999px;
-padding: 10px 24px;
+backdrop-filter: blur(10px);
+-webkit-backdrop-filter: blur(10px);
+border: 1px solid rgba(228, 204, 255, 0.6);
+color: #ffffff;
+padding: 12px 28px;
+border-radius: 24px;
 font-family: ‘Courier New’, monospace;
-font-size: 12px;
-font-weight: bold;
-letter-spacing: 2px;
+font-size: 11px;
+letter-spacing: 0.35em;
 text-transform: uppercase;
 cursor: pointer;
-box-shadow: 0 0 18px rgba(228, 204, 255, 0.25);
+transition: all 0.2s;
+box-shadow: 0 0 12px rgba(228, 204, 255, 0.3);
+font-weight: bold;
+}
+body.edit-mode .edit-toggle {
+color: var(–neon-pink);
+border-color: var(–neon-pink);
+box-shadow: 0 0 20px rgba(255, 170, 232, 0.4);
 }
 
-.edit-toggle.active {
-background: linear-gradient(135deg, #e4ccff, #ffaae8);
-color: #0a0a14;
-border-color: #ffaae8;
-box-shadow: 0 0 22px rgba(255, 170, 232, 0.6);
+/* EMPTY */
+.empty {
+grid-column: 1 / -1;
+text-align: center;
+padding: 60px 20px;
+}
+.empty-icon {
+font-size: 56px;
+margin-bottom: 20px;
+opacity: 0.5;
+filter: drop-shadow(0 0 20px var(–glow-violet));
+}
+.empty p {
+font-size: 13px;
+line-height: 1.8;
+letter-spacing: 0.15em;
+color: #ffffff;
 }
 
-/* MODAL BOTTOM-SHEET */
-.modal-overlay {
+/* MODAL */
+#add-modal {
+display: none;
 position: fixed;
 inset: 0;
-background: rgba(0, 0, 0, 0.75);
-backdrop-filter: blur(4px);
--webkit-backdrop-filter: blur(4px);
-display: none;
+z-index: 200;
+background: rgba(5, 5, 13, 0.85);
+backdrop-filter: blur(8px);
+-webkit-backdrop-filter: blur(8px);
 align-items: flex-end;
-justify-content: center;
-z-index: 100;
-}
-
-.modal-overlay.visible {
-display: flex;
 animation: fadeIn 0.2s ease;
 }
+#add-modal.open { display: flex; }
 
-@keyframes fadeIn {
-from { opacity: 0; }
-to   { opacity: 1; }
-}
-
-.modal {
-width: 100%;
-max-width: 560px;
-max-height: 92vh;
-overflow-y: auto;
-background: linear-gradient(180deg, #1a1530 0%, #0f0a1f 100%);
-border-top: 1px solid rgba(228, 204, 255, 0.4);
+.modal-sheet {
+background: linear-gradient(180deg, rgba(30, 25, 60, 0.95) 0%, rgba(15, 12, 30, 0.98) 100%);
+border: 1px solid var(–border-bright);
+border-bottom: none;
 border-radius: 24px 24px 0 0;
-padding: 24px 20px calc(env(safe-area-inset-bottom) + 24px);
-box-shadow: 0 -10px 50px rgba(228, 204, 255, 0.2);
-animation: slideUp 0.25s ease;
+padding: 18px 22px calc(env(safe-area-inset-bottom, 0px) + 22px);
+width: 100%;
+animation: slideUp 0.35s cubic-bezier(0.16, 1, 0.3, 1);
+box-shadow: 0 -10px 60px var(–glow-violet);
+position: relative;
+max-height: 90vh;
+overflow-y: auto;
 }
-
-@keyframes slideUp {
-from { transform: translateY(100%); }
-to   { transform: translateY(0); }
+.modal-sheet::before {
+content: ‘’;
+position: absolute;
+top: 0; left: 20%; right: 20%;
+height: 1px;
+background: linear-gradient(90deg, transparent, var(–neon-violet), transparent);
 }
-
-.modal-handle {
-width: 44px;
+.sheet-handle {
+width: 40px;
 height: 4px;
-background: rgba(228, 204, 255, 0.4);
+background: var(–border-bright);
 border-radius: 2px;
-margin: 0 auto 18px;
+margin: 0 auto 20px;
 }
-
-.modal-title {
+.sheet-title {
 font-family: Georgia, serif;
 font-style: italic;
-font-size: 22px;
+font-size: 24px;
 color: #e4ccff;
-text-align: center;
-margin-bottom: 22px;
-text-shadow: 0 0 12px rgba(228, 204, 255, 0.5);
+margin-bottom: 4px;
+text-shadow: 0 0 20px rgba(228, 204, 255, 0.8);
 }
-
-.field {
-margin-bottom: 18px;
-}
-
-.label {
-display: block;
-font-size: 11px;
-color: #b8f8ff;
-letter-spacing: 2px;
+.sheet-sub {
+font-size: 10px;
+color: #c8c0e8;
+letter-spacing: 0.3em;
 text-transform: uppercase;
+margin-bottom: 22px;
+}
+
+.field { margin-bottom: 16px; }
+.field label {
+display: block;
+font-size: 10px;
+letter-spacing: 0.4em;
+text-transform: uppercase;
+color: #e8e0ff;
 margin-bottom: 8px;
 font-weight: bold;
 }
-
-.input, .textarea {
+.field input, .field textarea {
 width: 100%;
-background: rgba(10, 10, 20, 0.8);
-border: 1px solid rgba(228, 204, 255, 0.35);
-border-radius: 10px;
-padding: 12px 14px;
+background: rgba(10, 10, 24, 0.6);
+border: 1px solid var(–border);
 color: #ffffff;
+padding: 13px 15px;
+border-radius: 12px;
 font-family: ‘Courier New’, monospace;
 font-size: 14px;
 outline: none;
-transition: border-color 0.2s ease, box-shadow 0.2s ease;
+transition: border-color 0.2s, box-shadow 0.2s;
+-webkit-appearance: none;
 }
-
-.input:focus, .textarea:focus {
-border-color: #e4ccff;
-box-shadow: 0 0 12px rgba(228, 204, 255, 0.35);
+.field input:focus, .field textarea:focus {
+border-color: var(–neon-violet);
+box-shadow: 0 0 0 3px var(–glow-violet);
 }
-
-.textarea {
-min-height: 160px;
-resize: vertical;
-font-size: 12px;
+.field textarea {
+height: 130px;
+resize: none;
+font-size: 11px;
 line-height: 1.5;
 }
 
-.emoji-grid {
+.emoji-picker {
 display: grid;
 grid-template-columns: repeat(8, 1fr);
-grid-template-rows: repeat(2, 1fr);
 gap: 6px;
 }
-
-.emoji-btn {
+.emoji-opt {
 aspect-ratio: 1;
-background: rgba(10, 10, 20, 0.8);
-border: 1px solid rgba(228, 204, 255, 0.25);
-border-radius: 8px;
-font-size: 22px;
+border-radius: 10px;
+border: 1px solid var(–border);
+background: rgba(10, 10, 24, 0.4);
+font-size: 20px;
 cursor: pointer;
 display: flex;
 align-items: center;
 justify-content: center;
-padding: 0;
-transition: all 0.15s ease;
+transition: all 0.15s;
+}
+.emoji-opt.selected {
+border-color: var(–neon-violet);
+background: var(–glow-violet);
+box-shadow: 0 0 16px var(–glow-violet);
+transform: scale(1.08);
 }
 
-.emoji-btn.selected {
-background: rgba(228, 204, 255, 0.2);
-border-color: #e4ccff;
-box-shadow: 0 0 12px rgba(228, 204, 255, 0.5);
-transform: scale(1.1);
-}
-
-.actions {
+.sheet-actions {
 display: flex;
 gap: 10px;
-margin-top: 8px;
+margin-top: 20px;
 }
-
-.btn {
+.btn-cancel {
 flex: 1;
-padding: 14px;
-border-radius: 12px;
+background: transparent;
+border: 1px solid rgba(228, 204, 255, 0.5);
+color: #e4ccff;
+padding: 15px;
+border-radius: 14px;
 font-family: ‘Courier New’, monospace;
-font-size: 13px;
-font-weight: bold;
-letter-spacing: 2px;
+font-size: 11px;
+letter-spacing: 0.3em;
 text-transform: uppercase;
 cursor: pointer;
-border: none;
-color: #ffffff;
+font-weight: bold;
 }
-
-.btn-cancel {
-background: rgba(255, 255, 255, 0.08);
-border: 1px solid rgba(255, 255, 255, 0.3);
-}
-
 .btn-save {
-background: linear-gradient(135deg, #e4ccff 0%, #ffaae8 100%);
-color: #0a0a14;
-box-shadow: 0 0 20px rgba(228, 204, 255, 0.5);
+flex: 2;
+background: linear-gradient(135deg, var(–neon-violet), var(–neon-pink));
+border: none;
+color: white;
+padding: 15px;
+border-radius: 14px;
+font-family: ‘Courier New’, monospace;
+font-size: 11px;
+letter-spacing: 0.35em;
+text-transform: uppercase;
+cursor: pointer;
+font-weight: bold;
+box-shadow: 0 0 24px var(–glow-violet);
+transition: opacity 0.2s, transform 0.1s;
 }
-
-.btn:active {
-transform: scale(0.97);
-}
+.btn-save:active { opacity: 0.9; transform: scale(0.98); }
 
 /* VIEWER */
-.viewer {
+#viewer {
+display: none;
 position: fixed;
 inset: 0;
-background: #0a0a14;
-z-index: 200;
-display: none;
+z-index: 500;
+background: #000;
 }
-
-.viewer.visible {
-display: block;
-}
-
-.viewer iframe {
+#viewer.open { display: block; }
+#viewer iframe {
+position: absolute;
+inset: 0;
 width: 100%;
 height: 100%;
 border: none;
-background: #0a0a14;
 }
 
-.close-btn {
+.viewer-close-fab {
 position: fixed;
-bottom: calc(env(safe-area-inset-bottom) + 18px);
-right: calc(env(safe-area-inset-right) + 18px);
-width: 56px;
-height: 56px;
+bottom: calc(env(safe-area-inset-bottom, 0px) + 16px);
+right: 16px;
+z-index: 600;
+width: 50px;
+height: 50px;
 border-radius: 50%;
-background: rgba(45, 40, 75, 0.95);
-border: 2px solid rgba(228, 204, 255, 0.7);
-color: #ffffff;
-font-size: 24px;
-font-weight: bold;
-cursor: pointer;
-z-index: 250;
-box-shadow:
-0 4px 24px rgba(0, 0, 0, 0.7),
-0 0 20px rgba(228, 204, 255, 0.5);
-display: none;
+background: rgba(20, 20, 40, 0.9);
+backdrop-filter: blur(12px);
+-webkit-backdrop-filter: blur(12px);
+border: 1px solid var(–neon-violet);
+color: var(–neon-violet);
+font-size: 20px;
+display: flex;
 align-items: center;
 justify-content: center;
-padding: 0;
+cursor: pointer;
+transition: all 0.2s;
+box-shadow: 0 0 20px var(–glow-violet);
+}
+.viewer-close-fab:active {
+background: var(–neon-violet);
+color: white;
+transform: scale(0.88);
 }
 
-.viewer.visible ~ .close-btn,
-.close-btn.visible {
-display: flex;
+/* ANIMATIONS */
+@keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
+@keyframes slideUp { from { transform: translateY(100%); } to { transform: translateY(0); } }
+@keyframes cardIn {
+from { opacity: 0; transform: translateY(15px) scale(0.95); }
+to { opacity: 1; transform: translateY(0) scale(1); }
 }
-
-.close-btn:active {
-transform: scale(0.92);
-}
-
-/* SONDE safe-area (invisible) */
-.sonde-top, .sonde-bottom {
-position: fixed;
-left: 0;
-width: 1px;
-pointer-events: none;
-visibility: hidden;
-}
-.sonde-top {
-top: 0;
-height: env(safe-area-inset-top);
-}
-.sonde-bottom {
-bottom: 0;
-height: env(safe-area-inset-bottom);
-}
-
-/* ERROR BOX */
-.err-box {
-position: fixed;
-left: 8px;
-right: 8px;
-bottom: calc(env(safe-area-inset-bottom) + 80px);
-background: rgba(120, 0, 30, 0.95);
-border: 1px solid #ff3366;
-border-radius: 10px;
-padding: 10px 14px;
-color: #ffffff;
-font-family: ‘Courier New’, monospace;
-font-size: 11px;
-line-height: 1.4;
-z-index: 9999;
-max-height: 40vh;
-overflow-y: auto;
-box-shadow: 0 0 24px rgba(255, 51, 102, 0.5);
-word-break: break-word;
-}
-
-.err-box strong {
-color: #ffaae8;
-display: block;
-margin-bottom: 4px;
-letter-spacing: 1px;
-text-transform: uppercase;
-font-size: 10px;
-}
-
-.char-count {
-font-size: 10px;
-color: #b8f8ff;
-text-align: right;
-margin-top: 4px;
-letter-spacing: 1px;
+@keyframes wiggle {
+from { transform: rotate(-1deg); }
+to { transform: rotate(1deg); }
 }
 </style>
 
 </head>
 <body>
 
-<div class="sonde-top" id="sondeTop"></div>
-<div class="sonde-bottom" id="sondeBottom"></div>
+<div id="home">
+  <div class="top-bar">
+    <div class="brand">Launcher</div>
+    <div class="brand-sub">
+      <span class="version-tag">v2.3</span>
+      <span class="app-count" id="app-count">--</span>
+    </div>
+  </div>
+  <div class="grid" id="grid"></div>
+  <div class="bottom-bar">
+    <button class="edit-toggle" id="edit-toggle" onclick="toggleEdit()">Modifier</button>
+  </div>
+</div>
 
-<header class="header">
-  <h1 class="title">Launcher</h1>
-  <span class="version">v4.0</span>
-</header>
-
-<main class="grid" id="grid"></main>
-
-<footer class="footer">
-  <button class="edit-toggle" id="editToggle" type="button">Modifier</button>
-</footer>
-
-<!-- Modal -->
-
-<div class="modal-overlay" id="modalOverlay">
-  <div class="modal" id="modal">
-    <div class="modal-handle"></div>
-    <h2 class="modal-title">Nouvelle app</h2>
+<div id="add-modal">
+  <div class="modal-sheet">
+    <div class="sheet-handle"></div>
+    <div class="sheet-title">Nouvelle app</div>
+    <div class="sheet-sub">Colle ton code HTML</div>
 
 ```
 <div class="field">
-  <label class="label" for="appName">Nom</label>
-  <input class="input" id="appName" type="text" maxlength="30" placeholder="Ma super app" autocomplete="off">
-  <div class="char-count" id="charCount">0 / 30</div>
+  <label>Nom</label>
+  <input type="text" id="inp-name" placeholder="Compteur Rami" maxlength="30" autocomplete="off" autocorrect="off">
 </div>
 
 <div class="field">
-  <label class="label">Icône</label>
-  <div class="emoji-grid" id="emojiGrid"></div>
+  <label>Icône</label>
+  <div class="emoji-picker" id="emoji-picker"></div>
 </div>
 
 <div class="field">
-  <label class="label" for="appCode">Code HTML</label>
-  <textarea class="textarea" id="appCode" placeholder="Colle ici le code HTML complet de ton app..." autocomplete="off" spellcheck="false"></textarea>
+  <label>Code HTML</label>
+  <textarea id="inp-code" placeholder="<!DOCTYPE html>..."></textarea>
 </div>
 
-<div class="actions">
-  <button class="btn btn-cancel" id="btnCancel" type="button">Annuler</button>
-  <button class="btn btn-save" id="btnSave" type="button">Enregistrer</button>
+<div class="sheet-actions">
+  <button class="btn-cancel" onclick="closeModal()">Annuler</button>
+  <button class="btn-save" onclick="saveApp()">Enregistrer</button>
 </div>
 ```
 
   </div>
 </div>
 
-<!-- Viewer -->
-
-<div class="viewer" id="viewer">
-  <iframe id="viewerFrame" sandbox="allow-scripts allow-same-origin allow-forms" referrerpolicy="no-referrer"></iframe>
+<div id="viewer">
+  <iframe id="viewer-frame" sandbox="allow-scripts allow-same-origin allow-forms"></iframe>
+  <button class="viewer-close-fab" onclick="closeViewer()">✕</button>
 </div>
-<button class="close-btn" id="closeBtn" type="button" aria-label="Fermer">✕</button>
 
 <script>
-(function () {
-  'use strict';
+const STORAGE_KEY = 'flo_launcher_apps_v1';
+const EMOJIS = ['🃏','🎮','📊','🎯','⏱','🎲','📝','🏓','🎵','🛠','🌿','⭐','🔥','💡','🎨','🚀'];
 
-  var STORAGE_KEY = 'flo_launcher_apps_v1';
-  var EMOJIS = [
-    '🎯', '🎮', '🎲', '🎨', '🎵', '⚡', '🔥', '💎',
-    '🚀', '🌙', '⭐', '🧪', '🛠️', '📊', '⏱️', '🏓'
-  ];
+let apps = [];
+let editMode = false;
+let selectedEmoji = EMOJIS[0];
 
-  // ---------- ERROR HANDLING ----------
-  window.onerror = function (msg, src, line, col, err) {
-    showError('JS Error: ' + msg + ' @ ' + (src || '?') + ':' + line + ':' + col);
-    return false;
-  };
-  window.addEventListener('unhandledrejection', function (e) {
-    showError('Promise: ' + (e.reason && e.reason.message ? e.reason.message : e.reason));
-  });
-
-  function showError(text) {
-    try {
-      var existing = document.getElementById('errBox');
-      if (!existing) {
-        existing = document.createElement('div');
-        existing.id = 'errBox';
-        existing.className = 'err-box';
-        existing.innerHTML = '<strong>Erreur</strong><div id="errContent"></div>';
-        document.body.appendChild(existing);
-        existing.addEventListener('click', function () {
-          existing.parentNode.removeChild(existing);
-        });
-      }
-      var content = document.getElementById('errContent');
-      var line = document.createElement('div');
-      line.textContent = String(text);
-      content.appendChild(line);
-    } catch (e) { /* swallow */ }
-  }
-
-  // ---------- HELPERS ----------
-  function escHtml(s) {
-    if (s === null || s === undefined) return '';
-    return String(s)
-      .replace(/&/g, '&amp;')
-      .replace(/</g, '&lt;')
-      .replace(/>/g, '&gt;')
-      .replace(/"/g, '&quot;')
-      .replace(/'/g, '&#39;');
-  }
-
-  function formatDate(d) {
-    if (!d) return '';
-    var dt = new Date(d);
-    if (isNaN(dt.getTime())) return '';
-    var dd = dt.getDate();
-    var mm = dt.getMonth() + 1;
-    var yy = String(dt.getFullYear()).slice(-2);
-    if (dd < 10) dd = '0' + dd;
-    if (mm < 10) mm = '0' + mm;
-    return dd + '/' + mm + '/' + yy;
-  }
-
-  function loadApps() {
-    try {
-      var raw = localStorage.getItem(STORAGE_KEY);
-      if (!raw) return [];
-      var parsed = JSON.parse(raw);
-      if (!parsed || Object.prototype.toString.call(parsed) !== '[object Array]') return [];
-      return parsed;
-    } catch (e) {
-      showError('loadApps: ' + e.message);
-      return [];
-    }
-  }
-
-  function saveApps(apps) {
-    try {
-      localStorage.setItem(STORAGE_KEY, JSON.stringify(apps));
-    } catch (e) {
-      showError('saveApps: ' + e.message);
-    }
-  }
-
-  // ---------- SAFE AREA MEASUREMENT ----------
-  function measureSafeArea() {
-    var top = 0, bot = 0;
-    try {
-      var sTop = document.getElementById('sondeTop');
-      var sBot = document.getElementById('sondeBottom');
-      if (sTop) top = sTop.getBoundingClientRect().height || 0;
-      if (sBot) bot = sBot.getBoundingClientRect().height || 0;
-    } catch (e) { /* ignore */ }
-    return { top: Math.round(top), bottom: Math.round(bot) };
-  }
-
-  function injectSafeArea(html) {
-    var sa = measureSafeArea();
-    var styleTag =
-      '<style>' +
-        'html, body { ' +
-          'padding-top: ' + sa.top + 'px !important; ' +
-          'padding-bottom: ' + sa.bottom + 'px !important; ' +
-          'box-sizing: border-box; ' +
-        '}' +
-      '</style>';
-
-```
-if (/<head[^>]*>/i.test(html)) {
-  return html.replace(/<head([^>]*)>/i, '<head$1>' + styleTag);
+function load() {
+  try { apps = JSON.parse(localStorage.getItem(STORAGE_KEY)) || []; } catch { apps = []; }
 }
-if (/<html[^>]*>/i.test(html)) {
-  return html.replace(/<html([^>]*)>/i, '<html$1><head>' + styleTag + '</head>');
+function save() {
+  try { localStorage.setItem(STORAGE_KEY, JSON.stringify(apps)); } catch(e) { alert('Stockage plein.'); }
 }
-return styleTag + html;
-```
-
-}
-
-// ––––– RENDER GRID –––––
-var editMode = false;
 
 function render() {
-var grid = document.getElementById(‘grid’);
-if (!grid) return;
-grid.innerHTML = ‘’;
+  const grid = document.getElementById('grid');
+  grid.innerHTML = '';
 
-```
-var apps = loadApps();
+  document.getElementById('app-count').textContent = apps.length ? `${apps.length} app${apps.length > 1 ? 's' : ''}` : '';
 
-for (var i = 0; i < apps.length; i++) {
-  try {
-    var a = apps[i] || {};
-    var card = document.createElement('div');
-    card.className = 'card';
-    card.setAttribute('data-idx', String(i));
-
-    var icon = document.createElement('div');
-    icon.className = 'card-icon';
-    icon.textContent = a.icon || '📦';
-
-    var name = document.createElement('div');
-    name.className = 'card-name';
-    name.textContent = a.name || '(sans nom)';
-
-    var date = document.createElement('div');
-    date.className = 'card-date';
-    date.textContent = formatDate(a.date);
-
-    var del = document.createElement('button');
-    del.className = 'delete-btn';
-    del.type = 'button';
-    del.setAttribute('aria-label', 'Supprimer');
-    del.textContent = '×';
-    del.setAttribute('data-idx', String(i));
-
-    card.appendChild(del);
-    card.appendChild(icon);
-    card.appendChild(name);
-    card.appendChild(date);
-
-    grid.appendChild(card);
-  } catch (e) {
-    showError('render card ' + i + ': ' + e.message);
+  if (apps.length === 0) {
+    grid.innerHTML = `<div class="empty"><div class="empty-icon">📱</div><p>Aucune app pour l'instant.<br>Ajoute ta première app<br>avec le bouton +</p></div>`;
+  } else {
+    apps.forEach((app, i) => {
+      const card = document.createElement('div');
+      card.className = 'app-card';
+      card.style.animationDelay = (i * 0.05) + 's';
+      card.innerHTML = `
+        <button class="delete-btn" onclick="deleteApp(event, ${i})">×</button>
+        <div class="icon">${app.icon}</div>
+        <div>
+          <div class="name">${escHtml(app.name)}</div>
+          <div class="meta">${formatDate(app.date)}</div>
+        </div>
+      `;
+      card.addEventListener('click', () => { if (!editMode) openViewer(i); });
+      grid.appendChild(card);
+    });
   }
-}
 
-// Add button - always last, always rendered
-try {
-  var addCard = document.createElement('div');
-  addCard.className = 'card card-add';
-  addCard.id = 'cardAdd';
-
-  var plus = document.createElement('div');
-  plus.className = 'plus';
-  plus.textContent = '+';
-
-  var addLabel = document.createElement('div');
-  addLabel.className = 'add-label';
-  addLabel.textContent = 'Ajouter';
-
-  addCard.appendChild(plus);
-  addCard.appendChild(addLabel);
+  const addCard = document.createElement('div');
+  addCard.className = 'add-card';
+  addCard.innerHTML = `<div class="plus">＋</div><div class="add-label">Ajouter</div>`;
+  addCard.onclick = openModal;
   grid.appendChild(addCard);
-} catch (e) {
-  showError('render add btn: ' + e.message);
 }
 
-if (editMode) {
-  document.body.classList.add('edit-mode');
-} else {
-  document.body.classList.remove('edit-mode');
-}
-```
-
+function toggleEdit() {
+  editMode = !editMode;
+  document.body.classList.toggle('edit-mode', editMode);
+  document.getElementById('edit-toggle').textContent = editMode ? 'Terminer' : 'Modifier';
 }
 
-// ––––– GRID INTERACTIONS –––––
-function onGridClick(e) {
-var target = e.target;
-if (!target) return;
-
-```
-// Delete button
-if (target.classList && target.classList.contains('delete-btn')) {
+function deleteApp(e, i) {
   e.stopPropagation();
-  var idx = parseInt(target.getAttribute('data-idx'), 10);
-  if (!isNaN(idx)) {
-    var apps = loadApps();
-    var nm = apps[idx] && apps[idx].name ? apps[idx].name : 'cette app';
-    if (window.confirm('Supprimer "' + nm + '" ?')) {
-      apps.splice(idx, 1);
-      saveApps(apps);
-      render();
-    }
+  if (confirm(`Supprimer "${apps[i].name}" ?`)) {
+    apps.splice(i, 1);
+    save();
+    render();
   }
-  return;
 }
 
-// Add button
-var addBtn = target.closest ? target.closest('.card-add') : null;
-if (addBtn) {
-  openModal();
-  return;
-}
-
-// In edit mode, taps on cards do nothing (except delete)
-if (editMode) return;
-
-// Open app
-var card = target.closest ? target.closest('.card') : null;
-if (card && !card.classList.contains('card-add')) {
-  var i = parseInt(card.getAttribute('data-idx'), 10);
-  if (!isNaN(i)) openApp(i);
-}
-```
-
-}
-
-// ––––– MODAL –––––
-var selectedEmoji = EMOJIS[0];
-
-function buildEmojiGrid() {
-var grid = document.getElementById(‘emojiGrid’);
-if (!grid) return;
-grid.innerHTML = ‘’;
-for (var i = 0; i < EMOJIS.length; i++) {
-var b = document.createElement(‘button’);
-b.type = ‘button’;
-b.className = ‘emoji-btn’;
-b.textContent = EMOJIS[i];
-b.setAttribute(‘data-emoji’, EMOJIS[i]);
-if (EMOJIS[i] === selectedEmoji) b.className += ’ selected’;
-grid.appendChild(b);
-}
+function renderEmojiPicker() {
+  const picker = document.getElementById('emoji-picker');
+  picker.innerHTML = '';
+  EMOJIS.forEach(e => {
+    const btn = document.createElement('div');
+    btn.className = 'emoji-opt' + (e === selectedEmoji ? ' selected' : '');
+    btn.textContent = e;
+    btn.onclick = () => { selectedEmoji = e; renderEmojiPicker(); };
+    picker.appendChild(btn);
+  });
 }
 
 function openModal() {
-selectedEmoji = EMOJIS[0];
-document.getElementById(‘appName’).value = ‘’;
-document.getElementById(‘appCode’).value = ‘’;
-document.getElementById(‘charCount’).textContent = ‘0 / 30’;
-buildEmojiGrid();
-document.getElementById(‘modalOverlay’).classList.add(‘visible’);
+  if (editMode) toggleEdit();
+  document.getElementById('inp-name').value = '';
+  document.getElementById('inp-code').value = '';
+  selectedEmoji = EMOJIS[0];
+  renderEmojiPicker();
+  document.getElementById('add-modal').classList.add('open');
 }
-
 function closeModal() {
-document.getElementById(‘modalOverlay’).classList.remove(‘visible’);
+  document.getElementById('add-modal').classList.remove('open');
 }
 
-function onEmojiClick(e) {
-var t = e.target;
-if (!t || !t.classList || !t.classList.contains(‘emoji-btn’)) return;
-selectedEmoji = t.getAttribute(‘data-emoji’) || EMOJIS[0];
-var btns = document.querySelectorAll(’.emoji-btn’);
-for (var i = 0; i < btns.length; i++) {
-btns[i].className = ‘emoji-btn’;
-if (btns[i].getAttribute(‘data-emoji’) === selectedEmoji) {
-btns[i].className = ‘emoji-btn selected’;
-}
-}
+function saveApp() {
+  const name = document.getElementById('inp-name').value.trim();
+  const code = document.getElementById('inp-code').value.trim();
+  if (!name) { alert('Donne un nom à ton app.'); return; }
+  if (!code) { alert('Colle le code HTML.'); return; }
+  apps.push({ name, icon: selectedEmoji, code, date: Date.now() });
+  save();
+  closeModal();
+  render();
 }
 
-function onSave() {
-var name = (document.getElementById(‘appName’).value || ‘’).trim();
-var code = document.getElementById(‘appCode’).value || ‘’;
-
-```
-if (!name) {
-  alert('Donne un nom à ton app.');
-  return;
+function openViewer(i) {
+  const app = apps[i];
+  document.getElementById('viewer-frame').srcdoc = app.code;
+  document.getElementById('viewer').classList.add('open');
 }
-if (!code.trim()) {
-  alert('Le code HTML est vide.');
-  return;
-}
-if (name.length > 30) name = name.slice(0, 30);
 
-var apps = loadApps();
-apps.push({
-  name: name,
-  icon: selectedEmoji,
-  code: code,
-  date: new Date().toISOString()
+function closeViewer() {
+  document.getElementById('viewer').classList.remove('open');
+  document.getElementById('viewer-frame').srcdoc = '';
+}
+
+function escHtml(s) {
+  return String(s).replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+}
+function formatDate(ts) {
+  const d = new Date(ts);
+  return d.toLocaleDateString('fr-FR', { day: 'numeric', month: 'short' });
+}
+
+document.getElementById('add-modal').addEventListener('click', e => {
+  if (e.target.id === 'add-modal') closeModal();
 });
-saveApps(apps);
-closeModal();
-render();
-```
 
-}
-
-// ––––– VIEWER –––––
-function openApp(i) {
-var apps = loadApps();
-var a = apps[i];
-if (!a || !a.code) return;
-
-```
-var injected;
-try {
-  injected = injectSafeArea(String(a.code));
-} catch (e) {
-  showError('inject safe-area: ' + e.message);
-  injected = String(a.code);
-}
-
-var frame = document.getElementById('viewerFrame');
-frame.setAttribute('srcdoc', injected);
-document.getElementById('viewer').classList.add('visible');
-document.getElementById('closeBtn').classList.add('visible');
-```
-
-}
-
-function closeApp() {
-var frame = document.getElementById(‘viewerFrame’);
-frame.setAttribute(‘srcdoc’, ‘’);
-document.getElementById(‘viewer’).classList.remove(‘visible’);
-document.getElementById(‘closeBtn’).classList.remove(‘visible’);
-}
-
-// ––––– EDIT MODE TOGGLE –––––
-function toggleEdit() {
-editMode = !editMode;
-var btn = document.getElementById(‘editToggle’);
-if (editMode) {
-btn.classList.add(‘active’);
-btn.textContent = ‘Terminé’;
-} else {
-btn.classList.remove(‘active’);
-btn.textContent = ‘Modifier’;
-}
-render();
-}
-
-// ––––– INIT –––––
-function init() {
-try {
+load();
+renderEmojiPicker();
 render();
 
-```
-  document.getElementById('grid').addEventListener('click', onGridClick);
-  document.getElementById('editToggle').addEventListener('click', toggleEdit);
-  document.getElementById('btnCancel').addEventListener('click', closeModal);
-  document.getElementById('btnSave').addEventListener('click', onSave);
-  document.getElementById('closeBtn').addEventListener('click', closeApp);
-  document.getElementById('emojiGrid').addEventListener('click', onEmojiClick);
-
-  document.getElementById('modalOverlay').addEventListener('click', function (e) {
-    if (e.target && e.target.id === 'modalOverlay') closeModal();
+if ('serviceWorker' in navigator) {
+  window.addEventListener('load', () => {
+    navigator.serviceWorker.register('sw.js').catch(() => {});
   });
-
-  var nameInput = document.getElementById('appName');
-  nameInput.addEventListener('input', function () {
-    var v = nameInput.value || '';
-    if (v.length > 30) {
-      v = v.slice(0, 30);
-      nameInput.value = v;
-    }
-    document.getElementById('charCount').textContent = v.length + ' / 30';
-  });
-
-  // Service Worker (HTTPS only)
-  if ('serviceWorker' in navigator && location.protocol === 'https:') {
-    navigator.serviceWorker.register('sw.js').catch(function (err) {
-      showError('SW: ' + err.message);
-    });
-  }
-} catch (e) {
-  showError('init: ' + e.message);
 }
-```
-
-}
-
-if (document.readyState === ‘loading’) {
-document.addEventListener(‘DOMContentLoaded’, init);
-} else {
-init();
-}
-})();
 </script>
 
 </body>
