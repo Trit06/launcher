@@ -554,7 +554,7 @@ to { transform: rotate(1deg); }
   <div class="top-bar">
     <div class="brand">Launcher</div>
     <div class="brand-sub">
-      <span class="version-tag">v5.0</span>
+      <span class="version-tag">v5.1</span>
       <span class="app-count" id="app-count">--</span>
     </div>
   </div>
@@ -727,13 +727,13 @@ function saveApp() {
 // Wrappe le code JSX dans un HTML complet qui le compile à la volée
 function wrapJsxAsHtml(jsxCode) {
   // Nettoie les imports (on les fournit globalement)
-  let cleanCode = jsxCode
+  var cleanCode = jsxCode
     .replace(/^\s*import\s+.*?from\s+['"][^'"]+['"];?\s*$/gm, '')
     .replace(/^\s*import\s+['"][^'"]+['"];?\s*$/gm, '');
 
   // Détecte le nom du composant exporté par défaut
-  let componentName = 'App';
-  const defaultMatch = cleanCode.match(/export\s+default\s+(?:function\s+)?(\w+)/);
+  var componentName = 'App';
+  var defaultMatch = cleanCode.match(/export\s+default\s+(?:function\s+)?(\w+)/);
   if (defaultMatch) {
     componentName = defaultMatch[1];
   }
@@ -744,91 +744,45 @@ function wrapJsxAsHtml(jsxCode) {
     .replace(/export\s+default\s+/g, 'const __DEFAULT__ = ')
     .replace(/export\s+(const|let|var|function|class)\s+/g, '$1 ');
 
-  // Si on a un __DEFAULT__, on l'utilise comme composant racine
-  const renderTarget = cleanCode.includes('__DEFAULT__') ? '__DEFAULT__' : componentName;
+  var renderTarget = cleanCode.indexOf('__DEFAULT__') >= 0 ? '__DEFAULT__' : componentName;
 
-  return `<!DOCTYPE html>
-<html lang="fr">
-<head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
-<scr${""}ipt src="https://unpkg.com/react@18/umd/react.production.min.js"><\/script>
-<scr${""}ipt src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js"><\/script>
-<scr${""}ipt src="https://unpkg.com/@babel/standalone/babel.min.js"><\/script>
-<scr${""}ipt src="https://cdn.tailwindcss.com"><\/script>
-<scr${""}ipt src="https://unpkg.com/lucide@latest"><\/script>
-<scr${""}ipt src="https://unpkg.com/recharts/umd/Recharts.js"><\/script>
-<style>
-  html, body {
-    margin: 0;
-    padding: 0;
-    min-height: 100vh;
-    padding-top: env(safe-area-inset-top, 0);
-    padding-bottom: env(safe-area-inset-bottom, 0);
-    box-sizing: border-box;
-  }
-  #root { min-height: 100vh; }
-  #error-box {
-    position: fixed;
-    top: 10px; left: 10px; right: 10px;
-    background: #ff5577;
-    color: white;
-    padding: 12px;
-    border-radius: 8px;
-    font-family: monospace;
-    font-size: 11px;
-    z-index: 9999;
-    word-break: break-word;
-    white-space: pre-wrap;
-    display: none;
-  }
-</style>
+  // On construit le HTML avec des concaténations pour éviter le problème de parsing
+  // des balises de fermeture script à l'intérieur d'un template literal.
+  // L'astuce: on construit la balise script via "<" + "script" pour que le parser HTML
+  // ne la voie pas dans le source du launcher.
+  var S = '<' + 'script';
+  var ES = '<' + '/' + 'script' + '>';
 
-</head>
-<body>
-<div id="root"></div>
-<div id="error-box"></div>
-<scr${""}ipt>
-  window.onerror = function(msg, src, line, col, err) {
-    var box = document.getElementById('error-box');
-    box.style.display = 'block';
-    box.textContent = 'Erreur ligne ' + line + ': ' + msg;
-    return false;
-  };
-</scr${""}ipt>
-<scr${""}ipt type="text/babel" data-type="module" data-presets="react">
-  const { useState, useEffect, useRef, useMemo, useCallback, useReducer, useContext, createContext, Fragment } = React;
+  var html = '<!DOCTYPE html>' +
+    '<html lang="fr"><head>' +
+    '<meta charset="UTF-8">' +
+    '<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">' +
+    S + ' src="https://unpkg.com/react@18/umd/react.production.min.js">' + ES +
+    S + ' src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js">' + ES +
+    S + ' src="https://unpkg.com/@babel/standalone/babel.min.js">' + ES +
+    S + ' src="https://cdn.tailwindcss.com">' + ES +
+    S + ' src="https://unpkg.com/lucide@latest">' + ES +
+    S + ' src="https://unpkg.com/recharts/umd/Recharts.js">' + ES +
+    '<style>' +
+    'html,body{margin:0;padding:0;min-height:100vh;padding-top:env(safe-area-inset-top,0);padding-bottom:env(safe-area-inset-bottom,0);box-sizing:border-box;}' +
+    '#root{min-height:100vh;}' +
+    '#error-box{position:fixed;top:10px;left:10px;right:10px;background:#ff5577;color:white;padding:12px;border-radius:8px;font-family:monospace;font-size:11px;z-index:9999;word-break:break-word;white-space:pre-wrap;display:none;}' +
+    '</style></head><body>' +
 
-// Stubs pour les imports lucide-react courants
-const createIcon = (name) => (props) => {
-const ref = React.useRef(null);
-React.useEffect(() => {
-if (window.lucide && ref.current) {
-ref.current.innerHTML = ‘’;
-const icon = window.lucide.createElement(window.lucide[name] || window.lucide.Circle);
-ref.current.appendChild(icon);
-}
-}, []);
-return React.createElement(‘span’, {
-ref,
-style: { display: ‘inline-flex’, width: props.size || 24, height: props.size || 24, color: props.color || ‘currentColor’ }
-});
-};
+```
+'<div id="root"></div><div id="error-box"></div>' +
+S + '>' +
+'window.onerror=function(msg,src,line,col,err){var b=document.getElementById("error-box");b.style.display="block";b.textContent="Erreur ligne "+line+": "+msg;return false;};' +
+ES +
+S + ' type="text/babel" data-presets="react">' +
+'const {useState,useEffect,useRef,useMemo,useCallback,useReducer,useContext,createContext,Fragment}=React;' +
+cleanCode +
+';try{const root=ReactDOM.createRoot(document.getElementById("root"));root.render(React.createElement(' + renderTarget + '));}catch(e){var b=document.getElementById("error-box");b.style.display="block";b.textContent="Erreur de rendu: "+e.message;}' +
+ES +
+'</body></html>';
+```
 
-${cleanCode}
-
-const rootEl = document.getElementById(‘root’);
-const root = ReactDOM.createRoot(rootEl);
-try {
-root.render(React.createElement(${renderTarget}));
-} catch(e) {
-document.getElementById(‘error-box’).style.display = ‘block’;
-document.getElementById(‘error-box’).textContent = ’Erreur de rendu: ’ + e.message;
-}
-</script>
-
-</body>
-</html>`;
+return html;
 }
 
 function openViewer(i) {
