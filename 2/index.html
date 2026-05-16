@@ -392,48 +392,59 @@
     font-weight: bold;
     cursor: pointer;
   }
-  #viewer {
-    display: none;
-    position: fixed;
-    inset: 0;
-    z-index: 500;
-    background: #000;
-  }
-  #viewer.open { display: block; }
-  #viewer iframe {
-    position: absolute;
-    inset: 0;
-    width: 100%;
-    height: 100%;
-    border: none;
-  }
-  .viewer-close-fab {
-    position: fixed;
-    bottom: calc(env(safe-area-inset-bottom, 0px) + 16px);
-    right: 16px;
-    z-index: 600;
-    width: 50px;
-    height: 50px;
-    border-radius: 50%;
-    background: rgba(20, 20, 40, 0.9);
-    border: 1px solid var(--neon-violet);
-    color: var(--neon-violet);
-    font-size: 20px;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    cursor: pointer;
-    box-shadow: 0 0 20px var(--glow-violet);
-  }
-  @keyframes wiggle {
-    from { transform: rotate(-1deg); }
-    to { transform: rotate(1deg); }
-  }
+
+/* ── VIEWER : nouvelle stratégie pour la bande noire ── */
+/* Le viewer occupe tout l’écran physique, et l’iframe s’étend jusque sous la barre home */
+#viewer {
+display: none;
+position: fixed;
+top: 0;
+left: 0;
+right: 0;
+bottom: 0;
+z-index: 500;
+background: #000;
+}
+#viewer.open { display: block; }
+/* L’iframe s’étend dans toute la safe area du bas avec une marge négative */
+#viewer iframe {
+position: absolute;
+top: 0;
+left: 0;
+width: 100%;
+/* On utilise une hauteur en vh qui couvre tout, et on étire au-delà de la safe-area */
+height: 100vh;
+height: 100dvh;
+border: none;
+background: #000;
+}
+
+.viewer-close-fab {
+position: fixed;
+bottom: calc(env(safe-area-inset-bottom, 0px) + 16px);
+right: 16px;
+z-index: 600;
+width: 50px;
+height: 50px;
+border-radius: 50%;
+background: rgba(20, 20, 40, 0.9);
+border: 1px solid var(–neon-violet);
+color: var(–neon-violet);
+font-size: 20px;
+display: flex;
+align-items: center;
+justify-content: center;
+cursor: pointer;
+box-shadow: 0 0 20px var(–glow-violet);
+}
+@keyframes wiggle {
+from { transform: rotate(-1deg); }
+to { transform: rotate(1deg); }
+}
 </style>
+
 </head>
 <body>
-
-<!-- TEMPLATE pour le wrapping JSX, stocké dans une balise <template> qui n'est pas exécutée -->
 
 <template id="jsx-wrapper-template"><!DOCTYPE html>
 
@@ -482,7 +493,7 @@ try {
   <div class="top-bar">
     <div class="brand">Launcher</div>
     <div class="brand-sub">
-      <span class="version-tag">v5.3</span>
+      <span class="version-tag">v5.4</span>
       <span class="app-count" id="app-count">--</span>
     </div>
   </div>
@@ -641,14 +652,11 @@ function saveApp() {
   render();
 }
 
-// Compose le HTML JSX en utilisant le template caché dans la page
 function buildJsxHtml(jsxCode) {
-  // Nettoie les imports
   let cleanCode = jsxCode
     .replace(/^\s*import\s+.*?from\s+['"][^'"]+['"];?\s*$/gm, '')
     .replace(/^\s*import\s+['"][^'"]+['"];?\s*$/gm, '');
 
-  // Détecte le nom du composant exporté par défaut
   let componentName = 'App';
   const m = cleanCode.match(/export\s+default\s+(?:function\s+)?(\w+)/);
   if (m) componentName = m[1];
@@ -660,7 +668,6 @@ function buildJsxHtml(jsxCode) {
 
   const renderTarget = cleanCode.indexOf('__DEFAULT__') >= 0 ? '__DEFAULT__' : componentName;
 
-  // Récupère le template HTML qui est dans le DOM (pas dans une chaîne JS)
   const tpl = document.getElementById('jsx-wrapper-template');
   let html = tpl.innerHTML;
   html = html.replace('/*__USER_CODE__*/', cleanCode);
@@ -674,64 +681,38 @@ function openViewer(i) {
   if ((app.type || 'html') === 'jsx') {
     codeToRender = buildJsxHtml(app.code);
   } else {
-    codeToRender = injectSafeArea(app.code);
+    codeToRender = app.code;
   }
   document.getElementById('viewer-frame').srcdoc = codeToRender;
   document.getElementById('viewer').classList.add('open');
 }
 
-// Mesure les safe-area du launcher et les injecte dans le HTML de l'app embarquée
-function injectSafeArea(htmlCode) {
-  // Mesure les insets actuels
-  const probe = document.createElement('div');
-  probe.style.cssText = 'position:fixed;top:env(safe-area-inset-top,0);left:0;visibility:hidden;';
-  document.body.appendChild(probe);
-  const topInset = parseInt(getComputedStyle(probe).top) || 0;
-  probe.style.top = 'env(safe-area-inset-bottom, 0)';
-  const bottomInset = parseInt(getComputedStyle(probe).top) || 0;
-  probe.remove();
-
-  // Injecte un style en fin de head qui ajoute le padding nécessaire
-  const styleTag = '<style id="__launcher_safe_area__">html,body{padding-top:' + topInset + 'px !important;padding-bottom:' + bottomInset + 'px !important;box-sizing:border-box;}body{min-height:100vh;}</style>';
-
-// Trouve où injecter
-if (/</head>/i.test(htmlCode)) {
-return htmlCode.replace(/</head>/i, styleTag + ‘</head>’);
-} else if (/<head[^>]*>/i.test(htmlCode)) {
-return htmlCode.replace(/(<head[^>]*>)/i, ‘$1’ + styleTag);
-} else if (/<body[^>]*>/i.test(htmlCode)) {
-return htmlCode.replace(/(<body[^>]*>)/i, ‘$1’ + styleTag);
-} else {
-return styleTag + htmlCode;
-}
-}
-
 function closeViewer() {
-document.getElementById(‘viewer’).classList.remove(‘open’);
-document.getElementById(‘viewer-frame’).srcdoc = ‘’;
+  document.getElementById('viewer').classList.remove('open');
+  document.getElementById('viewer-frame').srcdoc = '';
 }
 
 function escHtml(s) {
-return String(s).replace(/[&<>"’]/g, c => ({’&’:’&’,’<’:’<’,’>’:’>’,’"’:’"’,"’":’'’}[c]));
+  return String(s).replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
 }
 function formatDate(ts) {
-const d = new Date(ts);
-return d.toLocaleDateString(‘fr-FR’, { day: ‘numeric’, month: ‘short’ });
+  const d = new Date(ts);
+  return d.toLocaleDateString('fr-FR', { day: 'numeric', month: 'short' });
 }
 
-document.getElementById(‘add-modal’).addEventListener(‘click’, e => {
-if (e.target.id === ‘add-modal’) closeModal();
+document.getElementById('add-modal').addEventListener('click', e => {
+  if (e.target.id === 'add-modal') closeModal();
 });
-document.getElementById(‘inp-code’).addEventListener(‘input’, updateTypeIndicator);
+document.getElementById('inp-code').addEventListener('input', updateTypeIndicator);
 
 load();
 renderEmojiPicker();
 render();
 
-if (‘serviceWorker’ in navigator) {
-window.addEventListener(‘load’, () => {
-navigator.serviceWorker.register(‘sw.js’).catch(() => {});
-});
+if ('serviceWorker' in navigator) {
+  window.addEventListener('load', () => {
+    navigator.serviceWorker.register('sw.js').catch(() => {});
+  });
 }
 </script>
 
