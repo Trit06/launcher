@@ -333,6 +333,43 @@
   }
   .detected-type.html { background: rgba(228, 204, 255, 0.2); color: #e4ccff; }
   .detected-type.jsx { background: rgba(184, 248, 255, 0.2); color: #b8f8ff; }
+  /* Toggle thème de fond clair/sombre */
+  .theme-toggle {
+    display: flex;
+    gap: 8px;
+  }
+  .theme-opt {
+    flex: 1;
+    padding: 12px;
+    border-radius: 12px;
+    border: 1px solid var(--border);
+    background: rgba(10, 10, 24, 0.4);
+    color: #c8c0e8;
+    font-family: 'Courier New', monospace;
+    font-size: 11px;
+    letter-spacing: 0.15em;
+    text-transform: uppercase;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    font-weight: bold;
+    transition: all 0.15s;
+  }
+  .theme-opt .swatch {
+    width: 16px;
+    height: 16px;
+    border-radius: 4px;
+    border: 1px solid rgba(255,255,255,0.3);
+  }
+  .theme-opt[data-theme="light"] .swatch { background: #ffffff; }
+  .theme-opt[data-theme="dark"] .swatch { background: #0a0a14; }
+  .theme-opt.selected {
+    border-color: var(--neon-violet);
+    background: var(--glow-violet);
+    color: #1a1530;
+  }
   .field { margin-bottom: 16px; }
   .field label {
     display: flex;
@@ -594,7 +631,7 @@ try {
   <div class="top-bar">
     <div class="brand">Launcher</div>
     <div class="brand-sub">
-      <span class="version-tag">v5.6</span>
+      <span class="version-tag">v5.7</span>
       <span class="app-count" id="app-count">--</span>
     </div>
   </div>
@@ -620,6 +657,17 @@ try {
       <div class="emoji-custom-preview" id="emoji-custom-preview">
         <span class="big" id="emoji-custom-big"></span>
         <span class="label">Icône personnalisée sélectionnée</span>
+      </div>
+    </div>
+    <div class="field">
+      <label>Fond d'affichage</label>
+      <div class="theme-toggle" id="theme-toggle">
+        <div class="theme-opt selected" data-theme="light" onclick="selectTheme('light')">
+          <span class="swatch"></span>Clair
+        </div>
+        <div class="theme-opt" data-theme="dark" onclick="selectTheme('dark')">
+          <span class="swatch"></span>Sombre
+        </div>
       </div>
     </div>
     <div class="field">
@@ -650,6 +698,7 @@ const EMOJIS = ['🃏','🎮','📊','🎯','⏱','🎲','📝','🏓','🎵','�
 let apps = [];
 let editMode = false;
 let selectedEmoji = EMOJIS[0];
+let selectedTheme = 'light'; // 'light' ou 'dark' : fond du viewer
 let editingIndex = -1; // -1 = ajout, >=0 = modification de apps[editingIndex]
 
 function load() {
@@ -773,6 +822,13 @@ function hideCustomPreview() {
   document.getElementById('emoji-custom-preview').classList.remove('show');
 }
 
+function selectTheme(theme) {
+  selectedTheme = theme;
+  document.querySelectorAll('.theme-opt').forEach(function(opt) {
+    opt.classList.toggle('selected', opt.dataset.theme === theme);
+  });
+}
+
 function updateTypeIndicator() {
   const code = document.getElementById('inp-code').value.trim();
   const indicator = document.getElementById('type-indicator');
@@ -797,6 +853,7 @@ function openModal() {
   document.getElementById('type-indicator').style.display = 'none';
   selectedEmoji = EMOJIS[0];   // toujours repartir sur l'icône par défaut
   hideCustomPreview();          // et masquer un éventuel aperçu custom précédent
+  selectTheme('light');         // fond clair par défaut
   renderEmojiPicker();
   document.getElementById('add-modal').classList.add('open');
 }
@@ -811,6 +868,7 @@ function editApp(e, i) {
   document.getElementById('inp-name').value = app.name;
   document.getElementById('inp-code').value = app.code;
   selectedEmoji = app.icon;
+  selectTheme(app.theme || 'light');
   renderEmojiPicker();
   updateTypeIndicator();
   document.getElementById('add-modal').classList.add('open');
@@ -835,11 +893,12 @@ function saveApp() {
       icon: selectedEmoji,
       code: code,
       type: type,
+      theme: selectedTheme,
       date: apps[editingIndex].date || Date.now()
     };
     showToast('App mise à jour');
   } else {
-    apps.push({ name, icon: selectedEmoji, code, type, date: Date.now() });
+    apps.push({ name, icon: selectedEmoji, code, type, theme: selectedTheme, date: Date.now() });
     showToast('App ajoutée');
   }
   save();
@@ -912,6 +971,14 @@ function openViewer(i) {
   } else {
     codeToRender = app.code;
   }
+  // Applique le fond choisi pour cette app
+  const theme = app.theme || 'light';
+  const bg = theme === 'dark' ? '#0a0a14' : '#ffffff';
+  const viewer = document.getElementById('viewer');
+  const frame = document.getElementById('viewer-frame');
+  viewer.style.background = bg;
+  frame.style.background = bg;
+
   document.getElementById('viewer-frame').srcdoc = codeToRender;
   document.getElementById('viewer').classList.add('open');
 }
