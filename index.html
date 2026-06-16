@@ -1,5 +1,4 @@
 <!DOCTYPE html>
-
 <html lang="fr">
 <head>
 <meta charset="UTF-8">
@@ -255,7 +254,23 @@
     background: linear-gradient(to top, var(--bg-deep) 50%, transparent);
     display: flex;
     justify-content: center;
+    align-items: center;
+    gap: 10px;
     z-index: 10;
+  }
+  .backup-btn {
+    background: rgba(45, 40, 75, 0.9);
+    border: 1px solid rgba(184, 248, 255, 0.5);
+    color: #b8f8ff;
+    width: 44px;
+    height: 44px;
+    border-radius: 50%;
+    font-size: 18px;
+    cursor: pointer;
+    box-shadow: 0 0 12px rgba(184, 248, 255, 0.3);
+    display: flex;
+    align-items: center;
+    justify-content: center;
   }
   .edit-toggle {
     background: rgba(45, 40, 75, 0.9);
@@ -382,15 +397,19 @@
     margin-bottom: 8px;
     font-weight: bold;
   }
+  .code-actions {
+    display: flex;
+    gap: 6px;
+  }
   .copy-btn {
     background: rgba(184, 248, 255, 0.15);
     border: 1px solid rgba(184, 248, 255, 0.5);
     color: #b8f8ff;
-    padding: 4px 12px;
+    padding: 4px 10px;
     border-radius: 8px;
     font-family: 'Courier New', monospace;
     font-size: 9px;
-    letter-spacing: 0.15em;
+    letter-spacing: 0.12em;
     text-transform: uppercase;
     cursor: pointer;
     font-weight: bold;
@@ -540,18 +559,64 @@
     bottom: calc(env(safe-area-inset-bottom, 0px) + 16px);
     right: 16px;
     z-index: 600;
-    width: 50px;
-    height: 50px;
+    width: 38px;
+    height: 38px;
     border-radius: 50%;
     background: rgba(20, 20, 40, 0.9);
     border: 1px solid var(--neon-violet);
     color: var(--neon-violet);
-    font-size: 20px;
+    font-size: 15px;
     display: flex;
     align-items: center;
     justify-content: center;
     cursor: pointer;
-    box-shadow: 0 0 20px var(--glow-violet);
+    box-shadow: 0 0 16px var(--glow-violet);
+  }
+  /* Backup modal (réutilise modal-sheet) */
+  #backup-modal {
+    display: none;
+    position: fixed;
+    inset: 0;
+    z-index: 200;
+    background: rgba(5, 5, 13, 0.85);
+    align-items: flex-end;
+  }
+  #backup-modal.open { display: flex; }
+  .backup-action {
+    width: 100%;
+    background: rgba(10, 10, 24, 0.6);
+    border: 1px solid var(--border);
+    border-radius: 14px;
+    padding: 16px;
+    margin-bottom: 10px;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    gap: 14px;
+    text-align: left;
+    color: #ffffff;
+    font-family: 'Courier New', monospace;
+  }
+  .backup-action:active {
+    background: rgba(184, 248, 255, 0.1);
+    border-color: rgba(184, 248, 255, 0.5);
+  }
+  .backup-icon {
+    font-size: 28px;
+    line-height: 1;
+    flex-shrink: 0;
+  }
+  .backup-title {
+    font-size: 13px;
+    font-weight: bold;
+    margin-bottom: 4px;
+    letter-spacing: 0.02em;
+  }
+  .backup-desc {
+    font-size: 10px;
+    color: #c8c0e8;
+    letter-spacing: 0.1em;
+    line-height: 1.4;
   }
   /* Toast de confirmation */
   #toast {
@@ -585,7 +650,6 @@
 <body>
 
 <template id="jsx-wrapper-template"><!DOCTYPE html>
-
 <html lang="fr">
 <head>
 <meta charset="UTF-8">
@@ -631,12 +695,13 @@ try {
   <div class="top-bar">
     <div class="brand">Launcher</div>
     <div class="brand-sub">
-      <span class="version-tag">v5.7</span>
-      <span class="app-count" id="app-count">--</span>
+      <span class="version-tag">v5.8</span>
+      <span class="app-count" id="app-count">—</span>
     </div>
   </div>
   <div class="grid" id="grid"></div>
   <div class="bottom-bar">
+    <button class="backup-btn" id="backup-btn" onclick="openBackupMenu()" title="Sauvegarde">💾</button>
     <button class="edit-toggle" id="edit-toggle" onclick="toggleEdit()">Modifier</button>
   </div>
 </div>
@@ -673,7 +738,10 @@ try {
     <div class="field">
       <label>
         <span>Code (HTML ou JSX)</span>
-        <button class="copy-btn" id="copy-code-btn" onclick="copyCode()">📋 Copier</button>
+        <span class="code-actions">
+          <button class="copy-btn" id="paste-code-btn" onclick="clearAndPaste()">📥 Coller</button>
+          <button class="copy-btn" id="copy-code-btn" onclick="copyCode()">📋 Copier</button>
+        </span>
       </label>
       <textarea id="inp-code" placeholder="<!DOCTYPE html>... ou import React..."></textarea>
     </div>
@@ -687,6 +755,37 @@ try {
 <div id="viewer">
   <iframe id="viewer-frame" sandbox="allow-scripts allow-same-origin allow-forms"></iframe>
   <button class="viewer-close-fab" onclick="closeViewer()">✕</button>
+</div>
+
+<!-- Menu de sauvegarde -->
+<div id="backup-modal">
+  <div class="modal-sheet">
+    <div class="sheet-handle"></div>
+    <div class="sheet-title">Sauvegarde</div>
+    <div class="sheet-sub">Exporte ou restaure tes apps</div>
+
+    <button class="backup-action" onclick="exportAll()">
+      <span class="backup-icon">📤</span>
+      <div>
+        <div class="backup-title">Exporter toutes les apps</div>
+        <div class="backup-desc">Télécharge un fichier .json avec tout</div>
+      </div>
+    </button>
+
+    <button class="backup-action" onclick="triggerImport()">
+      <span class="backup-icon">📥</span>
+      <div>
+        <div class="backup-title">Importer depuis un fichier</div>
+        <div class="backup-desc">Choisis un fichier .json précédemment exporté</div>
+      </div>
+    </button>
+
+    <input type="file" id="import-file" accept=".json,application/json" style="display:none">
+
+    <div class="sheet-actions">
+      <button class="btn-cancel" onclick="closeBackupMenu()" style="flex:1">Fermer</button>
+    </div>
+  </div>
 </div>
 
 <div id="toast"></div>
@@ -928,6 +1027,31 @@ function copyCode() {
     fallbackCopy(code, done);
   }
 }
+function clearAndPaste() {
+  const ta = document.getElementById('inp-code');
+  const btn = document.getElementById('paste-code-btn');
+
+  const applyText = function(text) {
+    ta.value = text;
+    updateTypeIndicator();
+    btn.textContent = '✓ Collé';
+    btn.classList.add('copied');
+    showToast('Code remplacé');
+    setTimeout(function() {
+      btn.textContent = '📥 Coller';
+      btn.classList.remove('copied');
+    }, 2000);
+  };
+
+  if (navigator.clipboard && navigator.clipboard.readText) {
+    navigator.clipboard.readText().then(applyText).catch(function() {
+      showToast('Autorise l\u0027accès au presse-papier');
+    });
+  } else {
+    showToast('Presse-papier indisponible');
+  }
+}
+
 function fallbackCopy(text, done) {
   const ta = document.getElementById('inp-code');
   ta.focus();
@@ -938,6 +1062,84 @@ function fallbackCopy(text, done) {
   } catch(e) {
     showToast('Copie impossible');
   }
+}
+
+function openBackupMenu() {
+  document.getElementById('backup-modal').classList.add('open');
+}
+function closeBackupMenu() {
+  document.getElementById('backup-modal').classList.remove('open');
+}
+
+function exportAll() {
+  try {
+    const data = {
+      launcher: 'flo_launcher',
+      version: 1,
+      exportedAt: new Date().toISOString(),
+      apps: apps
+    };
+    const blob = new Blob([JSON.stringify(data, null, 2)], { type: 'application/json' });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    const ts = new Date().toISOString().slice(0, 10);
+    a.href = url;
+    a.download = 'launcher-backup-' + ts + '.json';
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
+    setTimeout(function() { URL.revokeObjectURL(url); }, 1000);
+    showToast('Sauvegarde téléchargée');
+    closeBackupMenu();
+  } catch(e) {
+    alert('Erreur export : ' + e.message);
+  }
+}
+
+function triggerImport() {
+  document.getElementById('import-file').click();
+}
+
+function handleImport(e) {
+  const file = e.target.files && e.target.files[0];
+  if (!file) return;
+  const reader = new FileReader();
+  reader.onload = function(ev) {
+    try {
+      const data = JSON.parse(ev.target.result);
+      if (!data || !Array.isArray(data.apps)) {
+        alert('Fichier invalide : pas une sauvegarde du launcher.');
+        return;
+      }
+      const importedCount = data.apps.length;
+      let mode;
+      if (apps.length === 0) {
+        mode = 'replace';
+      } else {
+        // Demander à l'utilisateur
+        const choice = confirm(
+          'Tu as déjà ' + apps.length + ' app(s) et le fichier en contient ' + importedCount + '.\n\n' +
+          'OK = REMPLACER tout (efface les apps actuelles)\n' +
+          'Annuler = FUSIONNER (ajoute aux apps existantes)'
+        );
+        mode = choice ? 'replace' : 'merge';
+      }
+      if (mode === 'replace') {
+        apps = data.apps;
+      } else {
+        apps = apps.concat(data.apps);
+      }
+      save();
+      render();
+      showToast(mode === 'replace' ? 'Apps remplacées' : 'Apps fusionnées');
+      closeBackupMenu();
+    } catch(err) {
+      alert('Erreur lecture fichier : ' + err.message);
+    }
+  };
+  reader.readAsText(file);
+  // Reset l'input pour permettre re-sélection du même fichier
+  e.target.value = '';
 }
 
 function buildJsxHtml(jsxCode) {
@@ -1000,6 +1202,10 @@ document.getElementById('add-modal').addEventListener('click', e => {
   if (e.target.id === 'add-modal') closeModal();
 });
 document.getElementById('inp-code').addEventListener('input', updateTypeIndicator);
+document.getElementById('import-file').addEventListener('change', handleImport);
+document.getElementById('backup-modal').addEventListener('click', function(e) {
+  if (e.target.id === 'backup-modal') closeBackupMenu();
+});
 
 // Quand l'utilisateur tape un emoji via le clavier natif
 document.getElementById('emoji-input').addEventListener('input', function(e) {
@@ -1025,6 +1231,5 @@ if ('serviceWorker' in navigator) {
   });
 }
 </script>
-
 </body>
 </html>
