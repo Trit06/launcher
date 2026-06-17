@@ -695,7 +695,7 @@ try {
   <div class="top-bar">
     <div class="brand">Launcher</div>
     <div class="brand-sub">
-      <span class="version-tag">v5.9</span>
+      <span class="version-tag">v5.11</span>
       <span class="app-count" id="app-count">—</span>
     </div>
   </div>
@@ -739,10 +739,12 @@ try {
       <label>
         <span>Code (HTML ou JSX)</span>
         <span class="code-actions">
+          <button class="copy-btn" id="file-code-btn" onclick="triggerCodeFile()">📂 Fichier</button>
           <button class="copy-btn" id="paste-code-btn" onclick="clearAndPaste()">📥 Coller</button>
           <button class="copy-btn" id="copy-code-btn" onclick="copyCode()">📋 Copier</button>
         </span>
       </label>
+      <input type="file" id="code-file-input" accept=".html,.htm,.jsx,.js,.txt,text/html,text/jsx,text/javascript,text/plain" style="display:none">
       <textarea id="inp-code" placeholder="<!DOCTYPE html>... ou import React..."></textarea>
     </div>
     <div class="sheet-actions">
@@ -845,7 +847,9 @@ function render() {
         '<div class="icon">' + app.icon + '</div>' +
         '<div><div class="name">' + escHtml(app.name) + '</div>' +
         '<div class="meta">' + badge + formatDate(app.date) + '</div></div>';
+      card.dataset.index = i;
       card.addEventListener('click', () => { if (!editMode) openViewer(i); });
+      attachDragHandlers(card);
       grid.appendChild(card);
     });
   }
@@ -1027,6 +1031,45 @@ function copyCode() {
     fallbackCopy(code, done);
   }
 }
+function triggerCodeFile() {
+  document.getElementById('code-file-input').click();
+}
+
+function handleCodeFile(e) {
+  const file = e.target.files && e.target.files[0];
+  if (!file) return;
+  const btn = document.getElementById('file-code-btn');
+  const ta = document.getElementById('inp-code');
+
+  const reader = new FileReader();
+  reader.onload = function(ev) {
+    const text = ev.target.result || '';
+    ta.value = text;
+    updateTypeIndicator();
+
+    // Pré-remplit le nom si vide, à partir du nom du fichier
+    const nameInput = document.getElementById('inp-name');
+    if (!nameInput.value.trim()) {
+      const base = file.name.replace(/\.(html?|jsx|js|txt)$/i, '').replace(/[-_]+/g, ' ').trim();
+      nameInput.value = base.slice(0, 30);
+    }
+
+    btn.textContent = '✓ Importé';
+    btn.classList.add('copied');
+    showToast('Fichier importé');
+    setTimeout(function() {
+      btn.textContent = '📂 Fichier';
+      btn.classList.remove('copied');
+    }, 2000);
+  };
+  reader.onerror = function() {
+    showToast('Erreur lecture fichier');
+  };
+  reader.readAsText(file);
+  // Reset pour permettre re-sélection du même fichier
+  e.target.value = '';
+}
+
 function clearAndPaste() {
   const ta = document.getElementById('inp-code');
   const btn = document.getElementById('paste-code-btn');
@@ -1165,6 +1208,164 @@ function buildJsxHtml(jsxCode) {
   return html;
 }
 
+// ── DRAG & DROP TACTILE (mode édition uniquement) ──
+let dragState = null;
+
+function attachDragHandlers(card) {
+  card.addEventListener('touchstart', onDragStart, { passive: false });
+  card.addEventListener('touchmove', onDragMove, { passive: false });
+  card.addEventListener('touchend', onDragEnd);
+  card.addEventListener('touchcancel', onDragEnd);
+  // Souris pour debug desktop
+  card.addEventListener('mousedown', onDragStart);
+}
+
+function getCardFromEvent(e) {
+  let target = e.target;
+  while (target && !target.classList.contains('app-card')) {
+    target = target.parentElement;
+  }
+  return target;
+}
+
+function getEventPoint(e) {
+  if (e.touches && e.touches.length) return { x: e.touches[0].clientX, y: e.touches[0].clientY };
+  if (e.changedTouches && e.changedTouches.length) return { x: e.changedTouches[0].clientX, y: e.changedTouches[0].clientY };
+  return { x: e.clientX, y: e.clientY };
+}
+
+function onDragStart(e) {
+  if (!editMode) return;
+  // Ignore les clics sur les boutons de la carte
+  if (e.target.classList && (e.target.classList.contains('delete-btn') || e.target.classList.contains('card-btn') || e.target.closest('.card-actions'))) return;
+
+  const card = getCardFromEvent(e);
+  if (!card || !card.classList.contains('app-card')) return;
+
+  const point = getEventPoint(e);
+  const rect = card.getBoundingClientRect();
+
+  dragState = {
+    card: card,
+    index: parseInt(card.dataset.index),
+    startX: point.x,
+    startY: point.y,
+    offsetX: point.x - rect.left,
+    offsetY: point.y - rect.top,
+    width: rect.width,
+    height: rect.height,
+    started: false,  // devient true après un seuil de mouvement (évite drag accidentel)
+    moved: false
+  };
+
+  if (e.cancelable) e.preventDefault();
+}
+
+function onDragMove(e) {
+  if (!dragState) return;
+  const point = getEventPoint(e);
+  const dx = point.x - dragState.startX;
+  const dy = point.y - dragState.startY;
+
+  // Seuil avant de démarrer vraiment le drag
+  if (!dragState.started) {
+    if (Math.abs(dx) < 8 && Math.abs(dy) < 8) return;
+    dragState.started = true;
+    dragState.card.classList.add('dragging');
+    dragState.card.style.position = 'fixed';
+    dragState.card.style.width = dragState.width + 'px';
+    dragState.card.style.height = dragState.height + 'px';
+    dragState.card.style.pointerEvents = 'none';
+  }
+  dragState.moved = true;
+  dragState.card.style.left = (point.x - dragState.offsetX) + 'px';
+  dragState.card.style.top = (point.y - dragState.offsetY) + 'px';
+
+  // Trouve la carte sous le curseur (en ignorant la carte qu'on déplace)
+  dragState.card.style.visibility = 'hidden';
+  const elBelow = document.elementFromPoint(point.x, point.y);
+  dragState.card.style.visibility = '';
+
+  if (elBelow) {
+    const otherCard = elBelow.closest('.app-card');
+    if (otherCard && otherCard !== dragState.card) {
+      const otherIndex = parseInt(otherCard.dataset.index);
+      if (!isNaN(otherIndex) && otherIndex !== dragState.index) {
+        // Réordonne dans l'array et re-render
+        const moved = apps.splice(dragState.index, 1)[0];
+        apps.splice(otherIndex, 0, moved);
+        dragState.index = otherIndex;
+        // Mise à jour visuelle SANS re-render complet pour garder la carte draggée stable
+        rerenderKeepingDrag();
+      }
+    }
+  }
+
+  if (e.cancelable) e.preventDefault();
+}
+
+function onDragEnd(e) {
+  if (!dragState) return;
+  const card = dragState.card;
+  card.classList.remove('dragging');
+  card.style.position = '';
+  card.style.width = '';
+  card.style.height = '';
+  card.style.left = '';
+  card.style.top = '';
+  card.style.pointerEvents = '';
+  card.style.visibility = '';
+
+  if (dragState.moved && dragState.started) {
+    save();
+    render();
+  }
+  dragState = null;
+}
+
+// Re-render mais en préservant l'élément en cours de drag
+function rerenderKeepingDrag() {
+  const draggedCard = dragState ? dragState.card : null;
+  // On enlève toutes les cartes sauf celle qu'on drague
+  const grid = document.getElementById('grid');
+  Array.from(grid.children).forEach(function(child) {
+    if (child !== draggedCard) child.remove();
+  });
+  // Re-render les cartes
+  apps.forEach(function(app, i) {
+    if (draggedCard && parseInt(draggedCard.dataset.index) === i && dragState) {
+      // Garde la carte draguée à sa position dans le DOM, mais met à jour son index
+      draggedCard.dataset.index = i;
+      grid.appendChild(draggedCard);
+      return;
+    }
+    const card = document.createElement('div');
+    card.className = 'app-card';
+    const type = app.type || 'html';
+    const badge = type === 'jsx'
+      ? '<span class="type-badge jsx">JSX</span>'
+      : '<span class="type-badge">HTML</span>';
+    card.innerHTML =
+      '<div class="card-actions">' +
+        '<div class="card-btn edit" onclick="editApp(event,' + i + ')">✎</div>' +
+        '<div class="card-btn delete" onclick="deleteApp(event,' + i + ')">×</div>' +
+      '</div>' +
+      '<div class="icon">' + app.icon + '</div>' +
+      '<div><div class="name">' + escHtml(app.name) + '</div>' +
+      '<div class="meta">' + badge + formatDate(app.date) + '</div></div>';
+    card.dataset.index = i;
+    card.addEventListener('click', function() { if (!editMode) openViewer(i); });
+    attachDragHandlers(card);
+    grid.appendChild(card);
+  });
+  // Re-ajoute le bouton Ajouter
+  const addCard = document.createElement('div');
+  addCard.className = 'add-card';
+  addCard.innerHTML = '<div class="plus">＋</div><div class="add-label">Ajouter</div>';
+  addCard.onclick = openModal;
+  grid.appendChild(addCard);
+}
+
 function openViewer(i) {
   const app = apps[i];
   let codeToRender;
@@ -1202,7 +1403,11 @@ document.getElementById('add-modal').addEventListener('click', e => {
   if (e.target.id === 'add-modal') closeModal();
 });
 document.getElementById('inp-code').addEventListener('input', updateTypeIndicator);
+// Drag : suivi mouse au niveau document (touch est géré sur les cartes)
+document.addEventListener('mousemove', function(e) { if (dragState) onDragMove(e); });
+document.addEventListener('mouseup', function(e) { if (dragState) onDragEnd(e); });
 document.getElementById('import-file').addEventListener('change', handleImport);
+document.getElementById('code-file-input').addEventListener('change', handleCodeFile);
 document.getElementById('backup-modal').addEventListener('click', function(e) {
   if (e.target.id === 'backup-modal') closeBackupMenu();
 });
