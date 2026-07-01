@@ -695,7 +695,7 @@ try {
   <div class="top-bar">
     <div class="brand">Launcher</div>
     <div class="brand-sub">
-      <span class="version-tag">v5.11</span>
+      <span class="version-tag">v5.12</span>
       <span class="app-count" id="app-count">—</span>
     </div>
   </div>
@@ -737,11 +737,11 @@ try {
     </div>
     <div class="field">
       <label>
-        <span>Code (HTML ou JSX)</span>
         <span class="code-actions">
           <button class="copy-btn" id="file-code-btn" onclick="triggerCodeFile()">📂 Fichier</button>
           <button class="copy-btn" id="paste-code-btn" onclick="clearAndPaste()">📥 Coller</button>
           <button class="copy-btn" id="copy-code-btn" onclick="copyCode()">📋 Copier</button>
+          <button class="copy-btn" id="export-code-btn" onclick="exportCode()">💾 Export</button>
         </span>
       </label>
       <input type="file" id="code-file-input" accept=".html,.htm,.jsx,.js,.txt,text/html,text/jsx,text/javascript,text/plain" style="display:none">
@@ -1031,6 +1031,39 @@ function copyCode() {
     fallbackCopy(code, done);
   }
 }
+
+function exportCode() {
+  const code = document.getElementById('inp-code').value;
+  if (!code) { showToast('Rien à exporter'); return; }
+  const btn = document.getElementById('export-code-btn');
+  const type = detectType(code);
+  const ext = type === 'jsx' ? 'jsx' : 'html';
+  const mime = type === 'jsx' ? 'text/jsx' : 'text/html';
+  const nameRaw = (document.getElementById('inp-name').value || '').trim() || 'app';
+  const safe = nameRaw.replace(/[^\w\- ]+/g, '').replace(/\s+/g, '-').slice(0, 40) || 'app';
+  const fname = safe + '.' + ext;
+  try {
+    const blob = new Blob([code], { type: mime + ';charset=utf-8' });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = fname;
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
+    setTimeout(function() { URL.revokeObjectURL(url); }, 1500);
+    btn.textContent = '✓ Exporté';
+    btn.classList.add('copied');
+    showToast('Fichier ' + fname + ' téléchargé');
+    setTimeout(function() {
+      btn.textContent = '💾 Export';
+      btn.classList.remove('copied');
+    }, 2000);
+  } catch (e) {
+    showToast('Erreur export : ' + e.message);
+  }
+}
+
 function triggerCodeFile() {
   document.getElementById('code-file-input').click();
 }
