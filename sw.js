@@ -1,4 +1,4 @@
-/* Launcher PWA - Service Worker
+/* Launcher PWA - Service Worker - v5.13
 
 - Stratégie: network-first avec fallback cache */
 
