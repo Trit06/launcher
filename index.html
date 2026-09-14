@@ -695,7 +695,7 @@ try {
   <div class="top-bar">
     <div class="brand">Launcher</div>
     <div class="brand-sub">
-      <span class="version-tag">v5.12</span>
+      <span class="version-tag">v5.13</span>
       <span class="app-count" id="app-count">—</span>
     </div>
   </div>
@@ -1155,20 +1155,72 @@ function exportAll() {
       exportedAt: new Date().toISOString(),
       apps: apps
     };
-    const blob = new Blob([JSON.stringify(data, null, 2)], { type: 'application/json' });
+    const jsonStr = JSON.stringify(data, null, 2);
+    const ts = new Date().toISOString().slice(0, 10);
+    const filename = 'launcher-backup-' + ts + '.json';
+
+    // ─ Méthode 1 : Web Share API avec fichier (Android Chrome, iOS 15+) ─
+    // Permet de sauvegarder vers Fichiers, Drive, Gmail, etc.
+    if (navigator.canShare && typeof File !== 'undefined') {
+      try {
+        const file = new File([jsonStr], filename, { type: 'application/json' });
+        if (navigator.canShare({ files: [file] })) {
+          navigator.share({
+            files: [file],
+            title: 'Sauvegarde Launcher',
+            text: 'Sauvegarde de ' + apps.length + ' app(s)'
+          }).then(function() {
+            showToast('Sauvegarde partagée');
+            closeBackupMenu();
+          }).catch(function(err) {
+            // Utilisateur a annulé OU partage refusé → fallback téléchargement
+            if (err && err.name === 'AbortError') return; // annulation utilisateur
+            fallbackDownload(jsonStr, filename);
+          });
+          return;
+        }
+      } catch(shareErr) {
+        // Web Share indispo ou erreur → fallback
+      }
+    }
+
+    // ─ Méthode 2 : téléchargement classique (fallback) ─
+    fallbackDownload(jsonStr, filename);
+  } catch(e) {
+    alert('Erreur export : ' + e.message);
+  }
+}
+
+function fallbackDownload(jsonStr, filename) {
+  try {
+    const blob = new Blob([jsonStr], { type: 'application/json' });
     const url = URL.createObjectURL(blob);
     const a = document.createElement('a');
-    const ts = new Date().toISOString().slice(0, 10);
     a.href = url;
-    a.download = 'launcher-backup-' + ts + '.json';
+    a.download = filename;
+    a.rel = 'noopener';
+    a.target = '_blank';
     document.body.appendChild(a);
     a.click();
     document.body.removeChild(a);
-    setTimeout(function() { URL.revokeObjectURL(url); }, 1000);
+    setTimeout(function() { URL.revokeObjectURL(url); }, 4000);
     showToast('Sauvegarde téléchargée');
     closeBackupMenu();
   } catch(e) {
-    alert('Erreur export : ' + e.message);
+    // Dernier recours : ouvre le JSON dans un nouvel onglet (utilisateur peut faire "Enregistrer")
+    try {
+      const w = window.open('');
+      if (w) {
+        w.document.write('<pre style="white-space:pre-wrap;word-break:break-all;font-family:monospace;font-size:11px;padding:12px">' + jsonStr.replace(/[<>&]/g, function(c) { return {'<':'&lt;','>':'&gt;','&':'&amp;'}[c]; }) + '</pre>');
+        w.document.title = filename;
+        showToast('Copie le texte pour sauvegarder');
+        closeBackupMenu();
+      } else {
+        alert('Impossible de télécharger. Autorise les popups.');
+      }
+    } catch(e2) {
+      alert('Export impossible : ' + e2.message);
+    }
   }
 }
 
