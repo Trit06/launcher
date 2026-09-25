@@ -1,7 +1,7 @@
 {
   "name": "Launcher",
   "short_name": "Launcher",
-  "description": "Lanceur d'applications personnelles",
+  "description": "Lanceur d'applications personnelles.",
   "start_url": "./",
   "scope": "./",
   "display": "standalone",
