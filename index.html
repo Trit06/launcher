@@ -113,6 +113,18 @@
     font-size: 9px;
     font-weight: bold;
   }
+  .offline-tag {
+    display: none;
+    color: #ffd98a;
+    border: 1px solid rgba(255, 217, 138, 0.6);
+    background: rgba(255, 217, 138, 0.1);
+    padding: 3px 8px;
+    border-radius: 10px;
+    font-size: 8px;
+    letter-spacing: 0.15em;
+    font-weight: bold;
+  }
+  body.offline .offline-tag { display: inline-block; }
   .grid {
     flex: 1;
     padding: 0 16px;
@@ -700,8 +712,9 @@ try {
   <div class="top-bar">
     <div class="brand">Launcher</div>
     <div class="brand-sub">
-      <span class="version-tag">v5.14</span>
+      <span class="version-tag">v5.15</span>
       <span class="app-count" id="app-count">—</span>
+      <span class="offline-tag" id="offline-tag">✈ hors ligne</span>
     </div>
   </div>
   <div class="grid" id="grid"></div>
@@ -1514,6 +1527,7 @@ function openViewer(i) {
   frame.style.background = bg;
 
   if (app.type === 'url' && app.url) {
+    if (!navigator.onLine) showToast('App web : connexion requise');
     // Pour une URL externe : sandbox élargi pour la navigation + top nav
     frame.removeAttribute('srcdoc');
     frame.setAttribute('sandbox', 'allow-scripts allow-same-origin allow-forms allow-popups allow-popups-to-escape-sandbox allow-top-navigation-by-user-activation allow-modals allow-storage-access-by-user-activation allow-downloads');
@@ -1592,9 +1606,42 @@ load();
 renderEmojiPicker();
 render();
 
+// ── HORS LIGNE (v5.15) ──
+// Indicateur mode avion
+function updateOnlineState() {
+  document.body.classList.toggle('offline', !navigator.onLine);
+}
+window.addEventListener('online', updateOnlineState);
+window.addEventListener('offline', updateOnlineState);
+updateOnlineState();
+
+// Demande au navigateur de ne pas effacer le stockage (apps + cache)
+if (navigator.storage && navigator.storage.persist) {
+  navigator.storage.persisted().then(function(p) { if (!p) navigator.storage.persist(); }).catch(function() {});
+}
+
+// Précharge les bibliothèques des apps JSX pour qu'elles marchent aussi hors ligne
+function warmJsxCdn() {
+  if (!navigator.onLine) return;
+  if (!apps.some(function(a) { return a.type === 'jsx'; })) return;
+  const html = document.getElementById('jsx-wrapper-template').innerHTML;
+  const urls = html.match(/https:\/\/[^"']+/g) || [];
+  urls.forEach(function(u) { fetch(u, { mode: 'no-cors' }).catch(function() {}); });
+}
+
 if ('serviceWorker' in navigator) {
   window.addEventListener('load', () => {
-    navigator.serviceWorker.register('sw.js').catch(() => {});
+    navigator.serviceWorker.register('sw.js', { updateViaCache: 'none' })
+      .then(function(reg) {
+        // Vérifie une mise à jour seulement si on a du réseau (jamais bloquant)
+        if (navigator.onLine) reg.update().catch(function() {});
+        return navigator.serviceWorker.ready;
+      })
+      .then(function() {
+        if (navigator.serviceWorker.controller) warmJsxCdn();
+        else navigator.serviceWorker.addEventListener('controllerchange', warmJsxCdn, { once: true });
+      })
+      .catch(() => {});
   });
 }
 </script>
